@@ -1,0 +1,15 @@
+---
+Name: simplebookingconfig
+---
+# Custom admin CSS
+LeftAndMain:
+  extra_requirements_css:
+    - commerce-simplebookings/css/admin.css
+
+# Extensions
+ShoppingCart:
+  extensions:
+    - SimpleBookingShoppingCartExtension
+Order:
+  extensions:
+    - SimpleBookingOrderExtension

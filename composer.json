@@ -1,0 +1,28 @@
+{
+  "name": "i-lateral/silverstripe-commerce-simplebookings",
+  "description": "Silverstripe module that adds simple booking functionality to the commerce system",
+    "type": "silverstripe-module",
+    "homepage": "http://github.com/i-lateral/silverstripe-commerce-simplebookings",
+    "keywords": ["silverstripe", "commerce", "ecommerce", "booking"],
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Morven Lewis-Everley",
+            "email": "morven@i-lateral.com"
+        }
+    ],
+    "support": {
+        "issues": "http://github.com/i-lateral/silverstripe-commerce-simplebookings/issues"
+    },
+    "require": {
+        "silverstripe/framework": ">=3.1",
+        "silverstripe-australia/gridfieldextensions": "1.*"
+    },
+    "suggest": {
+        "silverstripe/cms": "Add full content management support to your site",
+        "i-lateral/silverstripe-siteconfig": "Add site settings support"
+    },
+    "extra": {
+        "installer-name": "commerce-simplebookings"
+    }
+}
