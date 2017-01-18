@@ -85,6 +85,22 @@ class BookableProduct_Controller extends Product_Controller
         $cart = ShoppingCart::get();
         
         if ($object = $classname::get()->byID($id)) {
+            // Check if we are trying to book less places than allowed
+            if ($object->MinimumPlaces && $data["Quantity"] < $object->MinimumPlaces) {
+                $form->addErrorMessage(
+                    "Quantity",
+                    _t(
+                        "SimpleBookings.NotEnoughPlacesError",
+                        "You must book a minimum of {value} places",
+                        'Message generated when user tries to book to few places',
+                        array('value' => $object->MinimumPlaces)
+                    ),
+                    "bad"
+                );
+
+                return $this->redirectBack();
+            }
+
             $total_days = count(SimpleBookings::create_date_range_array(
                 $data["StartDate"],
                 $data["EndDate"]

@@ -8,11 +8,13 @@ class BookableProduct extends Product
     private static $description = "A bookable product that can be added to a booking";
 
     private static $db = array(
-        "AvailablePlaces" => "Int"
+        "AvailablePlaces" => "Int",
+        "MinimumPlaces" => "Int"
     );
 
     private static $defaults = array(
-        "Stocked" => 0
+        "Stocked" => 0,
+        "MinimumPlaces" => 0
     );
 
     private static $belongs_many_many = array(
@@ -24,13 +26,20 @@ class BookableProduct extends Product
         $fields = parent::getCMSFields();
 
         // Add right title to stock level
-        $availability_field = $fields->addFieldToTab(
+        $availability_field = $fields->addFieldsToTab(
             "Root.Settings",
-            NumericField::create("AvailablePlaces")
-                ->setRightTitle(_t(
-                    "SimpleBookings.AvailabilityDescription",
-                    "The availability of this product for a given day"
-                )),
+            array(
+                NumericField::create("AvailablePlaces")
+                    ->setRightTitle(_t(
+                        "SimpleBookings.AvailabilityDescription",
+                        "The availability of this product for a given day"
+                    )),
+                NumericField::create("MinimumPlaces")
+                    ->setRightTitle(_t(
+                        "SimpleBookings.MinimumPlacesDescription",
+                        "Does this require a minimum amount to book (use 0 to disable)?"
+                    ))
+            ),
             "StockLevel"
         );
 
