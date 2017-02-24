@@ -65,8 +65,14 @@ class BookingAdmin extends ModelAdmin
 
             // If a start date and end date are set, filter all dates
             if (is_array($query) && array_key_exists("StartDate", $query) && array_key_exists("EndDate", $query)) {
-                $filter["Start:GreaterThanOrEqual"] = $query["StartDate"];
-                $filter["End:LessThanOrEqual"] = $query["EndDate"];
+                // If both dates are the same, we can assume that it is a one day booking
+                if ($query["StartDate"] == $query["EndDate"]) {
+                    $filter["Start:LessThanOrEqual"] = $query["StartDate"];
+                    $filter["End:GreaterThanOrEqual"] = $query["EndDate"];
+                } else {
+                    $filter["Start:GreaterThanOrEqual"] = $query["StartDate"];
+                    $filter["End:LessThanOrEqual"] = $query["EndDate"];
+                }
             }
         }
 
