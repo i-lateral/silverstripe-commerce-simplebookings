@@ -21,7 +21,8 @@ class BookingAdmin extends ModelAdmin
     /**
 	 * @return Form
 	 */
-	public function SearchForm() {
+	public function SearchForm()
+    {
         $form = parent::SearchForm();
         $fields = $form->Fields();
         $query = $this->getRequest()->getVar("q");
@@ -52,6 +53,34 @@ class BookingAdmin extends ModelAdmin
 
 		return $form;
 	}
+
+    public function getEditForm($id = null, $fields = null)
+    {
+        $form = parent::getEditForm($id, $fields);
+        $fields = $form->Fields();
+        $gridField = $form->Fields()->fieldByName($this->modelClass);
+        $config = $gridField->getConfig();
+
+        // Alterations for Hiarachy on product cataloge
+        if ($this->modelClass == 'Booking') {
+            $alerts = array(
+				'OverBooked' => array(
+					'comparator' => 'equal',
+					'patterns' => array(
+						'1' => array(
+							'status' => 'alert',
+							'message' => _t("SimpleBookings.OverBookedProduct", 'This has an Over Booked product'),
+						),
+					)
+				)
+			);
+
+            $config
+                ->addComponent(new GridFieldRecordHighlighter($alerts));
+        }
+
+        return $form;
+    }
 
     public function getList()
     {

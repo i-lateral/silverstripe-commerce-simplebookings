@@ -18,11 +18,13 @@ class Booking extends DataObject implements PermissionProvider
 
     private static $many_many_extraFields = array(
         "Products" => array(
-            "BookedQTY" => "Int"
+            "BookedQTY" => "Int",
+            "OverBooked"=> "Int"
         )
     );
 
     private static $casting = array(
+        "OverBooked"    => "Boolean",
         "ProductsHTML"  => "HTMLText"
     );
 
@@ -67,6 +69,24 @@ class Booking extends DataObject implements PermissionProvider
         $obj->setValue($html);
 
         return $obj;
+    }
+
+    /**
+     * Determine if any of these products are overbooked
+     *
+     * @return Boolean
+     */
+    public function getOverBooked()
+    {
+        $overbooked = 0;
+
+        foreach ($this->Products() as $product) {
+            if ($product->OverBooked) {
+                $overbooked += $product->OverBooked;
+            }
+        }
+
+        return ($overbooked > 0) ? true : false;
     }
 
     /**
@@ -129,16 +149,42 @@ class Booking extends DataObject implements PermissionProvider
                     'BookedQTY' => array(
                         'field' => 'TextField',
                         'title' => _t("SimpleBookings.NumbertoBook", "Number to Book")
+                    ),
+                    'OverBooked' => array(
+                        'field' => 'ReadonlyField',
+                        'title' => _t("SimpleBookings.OverBooked", "Overbooked")
                     )
                 ));
+            
+            $alerts = array(
+				'OverBooked' => array(
+					'comparator' => 'greater',
+					'patterns' => array(
+						'0' => array(
+							'status' => 'alert',
+							'message' => _t("SimpleBookings.OverBooked", 'This product is Over Booked'),
+						),
+					)
+				)
+			);
 
 
         	$config
                 ->removeComponentsByType("GridFieldAddNewButton")
+                ->removeComponentsByType("GridFieldDeleteAction")
                 ->removeComponentsByType("GridFieldEditButton")
                 ->removeComponentsByType("GridFieldDetailForm")
                 ->removeComponentsByType("GridFieldDataColumns")
-                ->addComponent($editable_cols);
+                ->addComponent($editable_cols)
+                ->addComponent(new GridFieldDeleteAction(true))
+                ->addComponent(new GridFieldRecordHighlighter($alerts));
+            
+            $fields->removeByName("Products");
+            
+            $fields->addFieldToTab(
+                "Root.Main",
+                $products_field
+            );
         }
 
         return $fields;
@@ -277,11 +323,38 @@ class Booking extends DataObject implements PermissionProvider
     }
 
     /**
+     * Check all products and set any flags needed
+     *
+     */
+    public function onBeforeWrite()
+    {
+        parent::onBeforeWrite();
+
+        foreach ($this->Products() as $product) {
+            $quantity = $product->BookedQty;
+            $spaces = SimpleBookings::get_total_booked_spaces($this->Start, $this->End, $product->ID);
+            $diff = $spaces - $product->AvailablePlaces;
+
+            if ($diff > 0) {
+                $this->Products()->add(
+                    $product,
+                    array(
+                        "BookedQty" => $quantity,
+                        "OverBooked"=> $diff
+                    )
+                );
+            }
+        }
+    }
+
+    /**
      * Create a Booking when the order is marked as paid
      *
      */
     public function onAfterDelete()
     {
+        parent::onAfterDelete();
+
         // Ensure that the booking clears up after itself
         if ($this->OrderID) {
             $order = $this->Order();
