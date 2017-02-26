@@ -18,17 +18,12 @@ class SimpleBookingOrderExtension extends DataExtension
             $end_title = _t("SimpleBookings.EndDate", "End Date");
             $start_date = null;
             $end_date = null;
-            $title = null;
 
             // First see if this order contains bookable products
             foreach ($this->owner->Items() as $item) {
                 $product = $item->Match();
 
                 if ($product && $product instanceof BookableProduct) {
-                    if (!$title) {
-                        $title = $item->Title;
-                    }
-
                     foreach ($item->Customisations() as $customisation) {
                         if ($customisation->Title == $start_title) {
                             $start_date = $customisation->Value;
@@ -50,7 +45,6 @@ class SimpleBookingOrderExtension extends DataExtension
             // If we have found bookable products
             if ($products->exists()) {
                 $booking = Booking::create();
-                $booking->Title = $title;
                 $booking->Start = $start_date;
                 $booking->End = $end_date;
                 $booking->OrderID = $this->owner->ID;

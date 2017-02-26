@@ -3,7 +3,6 @@
 class Booking extends DataObject implements PermissionProvider
 {
     private static $db = array(
-        "Title" => "Varchar",
         "Start" => "Date",
         "End"   => "Date"
     );
@@ -30,7 +29,6 @@ class Booking extends DataObject implements PermissionProvider
     );
 
     private static $summary_fields = array(
-        "Title"         => "Title",
         "Start"         => "Start",
         "End"           => "End",
         "ProductsHTML"  => "Products"
