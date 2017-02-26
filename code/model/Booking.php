@@ -134,6 +134,10 @@ class Booking extends DataObject implements PermissionProvider
             $editable_cols = new GridFieldEditableColumns();
             $editable_cols
                 ->setDisplayFields(array(
+                    'CMSThumbnail' => array(
+                        'field' => 'LiteralField',
+                        'title' => _t("SimpleBookings.Thumbnail", "Thumbnail")
+                    ),
                     'Title' => array(
                         'field' => 'ReadonlyField',
                         'title' => _t("SimpleBookings.Title", "Title")
