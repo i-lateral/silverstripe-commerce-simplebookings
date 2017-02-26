@@ -27,21 +27,25 @@ class BookingDetailForm_ItemRequest extends GridFieldDetailForm_ItemRequest
     public function ItemEditForm()
     {
         $form = parent::ItemEditForm();
+        $form->addExtraClass("cms-booking-form");
 
 		if ($form && $this->record->ID !== 0 && $this->record->canEdit()) {
 			$fields = $form->Fields();
 			$actions = $form->Actions();
-        
-            // Remove the disabled field
-            $fields->removeByName("Disabled");
 
-            $actions->insertBefore(
-                FormAction::create(
-                    'doBook',
-                    _t('Catalogue.Enable', 'Enable')
-                )->setUseButtonTag(true),
-                "action_doDelete"
-            );
+            // Add right aligned total field
+            $total_obj = new Currency("TotalCost");
+            $total_obj->setValue($this->record->TotalCost);
+
+            $total = '<span class="cms-booking-total ui-corner-all ui-button-text-only">';
+            $total .= "<strong>Total:</strong> {$total_obj->Nice()}";
+            $total .= '</span>';
+
+            $actions->push(LiteralField::create(
+                "TotalCost",
+                $total
+            ));
+
         }
         
 		$this->extend("updateItemEditForm", $form);

@@ -25,7 +25,8 @@ class Booking extends DataObject implements PermissionProvider
 
     private static $casting = array(
         "OverBooked"    => "Boolean",
-        "ProductsHTML"  => "HTMLText"
+        "ProductsHTML"  => "HTMLText",
+        "TotalCost"     => "Currency"
     );
 
     private static $summary_fields = array(
@@ -87,6 +88,29 @@ class Booking extends DataObject implements PermissionProvider
         }
 
         return ($overbooked > 0) ? true : false;
+    }
+
+    /**
+     * Get the total cost of this booking, based on all products added
+     * and the total number of days
+     *
+     * @return Float
+     */
+    public function getTotalCost()
+    {
+        $total_days = count(SimpleBookings::create_date_range_array(
+            $this->Start,
+            $this->End
+        ));
+
+        $price = 0;
+
+        foreach ($this->Products() as $product) {
+            $single_price = $product->PriceAndTax;
+            $price = ($single_price * $product->BookedQTY) * $total_days;
+        }
+
+        return $price;
     }
 
     /**

@@ -2,3 +2,16 @@
     background-image: url('../images/contents.png');
     background-position: 0 0;
 }
+
+.cms-booking-form .Actions .cms-booking-total {
+    float: right;
+    padding: .4em 1em;
+    border: 1px solid #d0d3d5;
+    background: #4f5861;
+    color: #fff;
+    font-size: 1.25em;
+}
+
+.cms-booking-form .Actions #action_doBook {
+    float: right;
+}

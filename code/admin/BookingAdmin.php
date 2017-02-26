@@ -76,7 +76,9 @@ class BookingAdmin extends ModelAdmin
 			);
 
             $config
-                ->addComponent(new GridFieldRecordHighlighter($alerts));
+                ->removeComponentsByType("GridFieldDetailForm")
+                ->addComponent(new GridFieldRecordHighlighter($alerts))
+                ->addComponent(new BookingDetailForm());
         }
 
         return $form;
