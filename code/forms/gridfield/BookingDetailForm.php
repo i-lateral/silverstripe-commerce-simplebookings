@@ -33,6 +33,17 @@ class BookingDetailForm_ItemRequest extends GridFieldDetailForm_ItemRequest
 			$fields = $form->Fields();
 			$actions = $form->Actions();
 
+            // Add a button to view this items order (if available)
+            if ($this->record->OrderID) {
+                $actions->insertBefore(
+                    FormAction::create(
+                        'doViewOrder',
+                        _t('SimpleBookings.ViewOrder', 'ViewOrder')
+                    ),
+                    "action_doDelete"
+                );
+            }
+
             // Add right aligned total field
             $total_obj = new Currency("TotalCost");
             $total_obj->setValue($this->record->TotalCost);
@@ -54,30 +65,14 @@ class BookingDetailForm_ItemRequest extends GridFieldDetailForm_ItemRequest
     }
 
     /**
-     * Special action to actualise this booking (so it's items are registered)
+     * Redirect to this record's associated order in the CMS
      *
      */
-    public function doBook($data, $form)
+    public function doViewOrder($data, $form)
     {
         $record = $this->record;
-
-        /*if ($record && !$record->canEdit()) {
-            return Security::permissionFailure($this);
-        }
-
-        $form->saveInto($record);
+        $controller = Controller::curr();
         
-        $record->Disabled = 0;
-        $record->write();
-        $this->gridField->getList()->add($record);*/
-
-        $message = sprintf(
-            _t('Catalogue.Enabled', 'Enabled %s %s'),
-            $this->record->singular_name(),
-            '"'.Convert::raw2xml($this->record->Title).'"'
-        );
-        
-        $form->sessionMessage($message, 'good');
-        return $this->edit(Controller::curr()->getRequest());
+        return $controller->redirect($record->CMSOrderLink());
     }
 }

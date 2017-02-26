@@ -56,6 +56,27 @@ class Booking extends DataObject implements PermissionProvider
         );
     }
 
+
+    /**
+     * Link to view this item's order in the CMS
+     *
+     * @return String
+     */
+    public function CMSOrderLink()
+    {
+        return Controller::join_links(
+            "admin",
+            OrderAdmin::config()->url_segment,
+            "Order",
+            "EditForm",
+            "field",
+            "Order",
+            "item",
+            $this->OrderID,
+            "view"
+        );
+    }
+
     public function getProductsHTML()
     {
         $html = "<ul>";
