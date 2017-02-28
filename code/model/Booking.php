@@ -8,7 +8,8 @@ class Booking extends DataObject implements PermissionProvider
     );
 
     private static $has_one = array(
-        "Order" => "Order"
+        "Order" => "Order",
+        "Customer" => "Member"
     );
 
     private static $many_many = array(
@@ -31,7 +32,10 @@ class Booking extends DataObject implements PermissionProvider
     private static $summary_fields = array(
         "Start"         => "Start",
         "End"           => "End",
-        "ProductsHTML"  => "Products"
+        "ProductsHTML"  => "Products",
+        "Customer.FirstName" => "First Name",
+        "Customer.Surname" => "Surname",
+        "Customer.Email" => "Email"
     );
 
     /**
@@ -233,6 +237,25 @@ class Booking extends DataObject implements PermissionProvider
                 $products_field
             );
         }
+
+        // Add has one picker field.
+        $fields->addFieldsToTab(
+            'Root.Customer',
+            array(
+                HeaderField::create(
+                    "CustomerHeader",
+                    _t("SimpleBookings.CustomerDetails", "Customer Details")
+                ),
+                HasOnePickerField::create(
+                    $this,
+                    'CustomerID',
+                    _t("SimpleBookings.CustomerInfo",'Customer Info'),
+                    $this->Customer(),
+                    _t("SimpleBookings.SelectExistingCustomer", 'Select Existing Customer')
+                )->enableCreate(_t("SimpleBookings.AddNewCustomer", 'Add New Customer'))
+                ->enableEdit()
+            )
+        );
 
         return $fields;
     }
