@@ -160,16 +160,47 @@ class Booking extends DataObject implements PermissionProvider
     {
         $fields = parent::getCMSFields();
 
+        // Hide Order Field
+        $fields->replaceField(
+            "OrderID",
+            HiddenField::create("OrderID")
+        );
+
         // Setup calendars on date fields
         $start_field = $fields->dataFieldByName("Start");
         $end_field = $fields->dataFieldByName("End");
 
         if ($start_field && $end_field) {
+            $fields->addFieldToTab(
+                'Root.Main',
+                HeaderField::create(
+                    "DatesHeader",
+                    _t("SimpleBookings.SelectStartEndDate", "Select a Start and End Date")
+                ),
+                'Start'
+            );
+            
+
+            $fields->removeByName("Start");
+            $fields->removeByName("End");
+
             $start_field
                 ->setConfig("showcalendar", true);
 
             $end_field
                 ->setConfig("showcalendar", true);
+
+            $dates_field = CompositeField::create(
+                $start_field,
+                $end_field
+            )->setColumnCount(2)
+            ->setTitle("DatesField")
+            ->addExtraClass("booking-dates-field");
+
+            $fields->addFieldToTab(
+                "Root.Main",
+                $dates_field
+            );
         }
 
         // Add editable fields to manage quantity
