@@ -30,12 +30,14 @@ class Booking extends DataObject implements PermissionProvider
     );
 
     private static $summary_fields = array(
-        "Start"         => "Start",
-        "End"           => "End",
-        "ProductsHTML"  => "Products",
-        "Customer.FirstName" => "First Name",
-        "Customer.Surname" => "Surname",
-        "Customer.Email" => "Email"
+        "ID"                => "ID",
+        "Start"             => "Start",
+        "End"               => "End",
+        "ProductsHTML"      => "Products",
+        "Customer.FirstName"=> "First Name",
+        "Customer.Surname"  => "Surname",
+        "Customer.Email"    => "Email",
+        "Order.OrderNumber" => "Order"
     );
 
     /**

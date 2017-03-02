@@ -38,7 +38,6 @@ class SimpleBookingOrderExtension extends DataExtension
                         "Product" => $product,
                         "Quantity" => $item->Quantity
                     )));
-                    
                 }
             }
 
@@ -59,6 +58,15 @@ class SimpleBookingOrderExtension extends DataExtension
 
                 $this->owner->BookingID = $booking->ID;
             }
+        }
+    }
+
+    public function onAfterDelete()
+    {
+        // Clean up any bookings that are associated with this order
+        foreach (Booking::get()->filter("OrderID", $this->owner->ID) as $booking) {
+            $booking->OrderID = 0;
+            $booking->write();
         }
     }
 }
