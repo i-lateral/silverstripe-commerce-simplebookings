@@ -19,6 +19,12 @@ class SimpleBookings extends ViewableData
     private static $lock_cart = true;
 
     /**
+     * The amount of time to leave between each item in
+     * the @link create_date (defaults to 1 minute).
+     */
+    private static $date_timeframe = 86400;
+
+    /**
      * Do BookableProducts contain a deliverable component
      * (for example tickets to be posted). By default this
      * module assumes no.
@@ -35,8 +41,8 @@ class SimpleBookings extends ViewableData
      * Thanks to this stack overflow post: 
      * http://stackoverflow.com/questions/4312439/php-return-all-dates-between-two-dates-in-an-array
      *
-     * @param date_from The starting date
-     * @param date_to The end date
+     * @param date_from The starting date/time
+     * @param date_to The end date/time
      * @return array
      */
     public static function create_date_range_array($date_from, $date_to)
@@ -44,11 +50,12 @@ class SimpleBookings extends ViewableData
         $range = array();
         $time_from = strtotime($date_from);
         $time_to = strtotime($date_to);
+        $timeframe = self::config()->date_timeframe;
 
         if ($time_to >= $time_from) {
             array_push($range, date('Y-m-d', $time_from));
             while ($time_from < $time_to) {
-                $time_from += 86400;
+                $time_from += $timeframe;
                 array_push($range, date('Y-m-d', $time_from));
             }
         }
