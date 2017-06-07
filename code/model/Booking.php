@@ -125,16 +125,17 @@ class Booking extends DataObject implements PermissionProvider
      */
     public function getTotalCost()
     {
-        $total_days = count(SimpleBookings::create_date_range_array(
-            $this->Start,
-            $this->End
-        ));
-
         $price = 0;
 
         foreach ($this->Products() as $product) {
+            $total_time = count(SimpleBookings::create_date_range_array(
+                $product->Start,
+                $product->End,
+                $product->PricingPeriod
+            ));
+
             $single_price = $product->PriceAndTax;
-            $price = ($single_price * $product->BookedQTY) * $total_days;
+            $price = ($single_price * $product->BookedQTY) * $total_time;
         }
 
         return $price;

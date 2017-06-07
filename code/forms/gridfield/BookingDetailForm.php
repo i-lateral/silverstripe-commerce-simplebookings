@@ -106,9 +106,10 @@ class BookingDetailForm_ItemRequest extends GridFieldDetailForm_ItemRequest
 
             // Loop through each booking item and add that to the order
             foreach($record->Products() as $product) {
-                $total_days = count(SimpleBookings::create_date_range_array(
+                $total_time = count(SimpleBookings::create_date_range_array(
                     $record->Start,
-                    $record->End
+                    $record->End,
+                    $record->PricingPeriod
                 ));
 
                 $customisations = ArrayList::create();
@@ -125,14 +126,14 @@ class BookingDetailForm_ItemRequest extends GridFieldDetailForm_ItemRequest
                 )));
 
                 $customisations->add(ArrayData::create(array(
-                    "Title" => _t("SimpleBookings.NoOfDays", "Number of Days"),
-                    "Value" => $total_days
+                    "Title" => _t("SimpleBookings.LengthOfTime", "Length of Time"),
+                    "Value" => $total_time
                 )));
                 
                 $order_item = new OrderItem();
                 $order_item->Title          = $product->Title;
                 $order_item->Customisation  = serialize($customisations);
-                $order_item->Quantity       = ($total_days * $product->BookedQTY);
+                $order_item->Quantity       = ($total_time * $product->BookedQTY);
                 
                 if ($product->StockID) {
                     $order_item->StockID = $product->StockID;

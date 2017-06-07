@@ -101,9 +101,10 @@ class BookableProduct_Controller extends Product_Controller
                 return $this->redirectBack();
             }
 
-            $total_days = count(SimpleBookings::create_date_range_array(
+            $total_time = count(SimpleBookings::create_date_range_array(
                 $data["StartDate"],
-                $data["EndDate"]
+                $data["EndDate"],
+                $object->PricingPeriod
             ));
 
             $total_booked_places = SimpleBookings::get_total_booked_spaces(
@@ -134,9 +135,9 @@ class BookableProduct_Controller extends Product_Controller
                 );
 
                 $customisations[] = array(
-                    "Title" => _t("SimpleBookings.NoOfDays", "Number of Days"),
-                    "Value" => $total_days,
-                    "Price" => ($object->Price * $total_days) - $object->Price
+                    "Title" => _t("SimpleBookings.LengthOfTime", "Length of Time"),
+                    "Value" => $total_time,
+                    "Price" => ($object->Price * $total_time) - $object->Price
                 );
 
                 $item_to_add = array(

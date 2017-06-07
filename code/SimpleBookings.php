@@ -29,6 +29,34 @@ class SimpleBookings extends ViewableData
     private static $allow_delivery = false;
 
     /**
+     * Takes two dates formatted as YYYY-MM-DD and creates an inclusive
+     * array of the timecodes between the from and to dates.
+     * 
+     * Thanks to this stack overflow post:
+     * http://stackoverflow.com/questions/4312439/php-return-all-dates-between-two-dates-in-an-array
+     *
+     * @param date_from The starting date
+     * @param date_to The end date
+     * @param interval a time period in seconds that will be used to make the array 
+     * @return array
+     */
+    public static function create_date_range_array($date_from, $date_to, $interval)
+    {
+        $range = array();
+        $time_from = strtotime($date_from);
+        $time_to = strtotime($date_to);
+
+        if ($time_to >= $time_from) {
+            while ($time_from < $time_to) {
+                $range[] = $time_from;
+                $time_from += $interval;
+            }
+        }
+
+        return $range;
+    }
+
+    /**
      * Find the total spaces already booked between the two provided dates.
      *
      * @param date_from The starting date
@@ -40,7 +68,6 @@ class SimpleBookings extends ViewableData
     public static function get_total_booked_spaces($date_from, $date_to, $ID)
     {
         // First get a list of days between the start and end date
-        $days = self::create_date_range_array($date_from, $date_to);
         $total_places = 0;
         $product = BookableProduct::get()->byID($ID);
 
