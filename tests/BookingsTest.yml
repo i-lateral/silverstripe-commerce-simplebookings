@@ -1,0 +1,23 @@
+BookableProduct:
+  fancyroom:
+    Title: "A Fancy Room"
+    BasePrice: "80"
+    Availability: 5
+  simpleroom:
+    Title: "A Simple Room"
+    BasePrice: "40"
+    Availability: 10
+  grouproom:
+    Title: "A Room for Groups"
+    BasePrice: "20"
+    Availability: 2
+    MinimumPlaces: 4
+Booking:
+  fancybookingone:
+    Start: "2017-06-16 15:00:00"
+    End: "2017-06-18 11:00:00"
+    Products:
+      - =>BookableProduct.fancyroom:
+        BookedQTY: 2
+        Start: "2017-06-16 15:00:00"
+        End: "2017-06-18 11:00:00"

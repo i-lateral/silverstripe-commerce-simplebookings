@@ -19,12 +19,6 @@ class SimpleBookings extends ViewableData
     private static $lock_cart = true;
 
     /**
-     * The amount of time to leave between each item in
-     * the @link create_date (defaults to 1 minute).
-     */
-    private static $date_timeframe = 86400;
-
-    /**
      * Do BookableProducts contain a deliverable component
      * (for example tickets to be posted). By default this
      * module assumes no.
@@ -33,35 +27,6 @@ class SimpleBookings extends ViewableData
      * @config 
      */
     private static $allow_delivery = false;
-    
-    /**
-     * Takes two dates formatted as YYYY-MM-DD and creates an inclusive
-     * array of the dates between the from and to dates.
-     * 
-     * Thanks to this stack overflow post: 
-     * http://stackoverflow.com/questions/4312439/php-return-all-dates-between-two-dates-in-an-array
-     *
-     * @param date_from The starting date/time
-     * @param date_to The end date/time
-     * @return array
-     */
-    public static function create_date_range_array($date_from, $date_to)
-    {
-        $range = array();
-        $time_from = strtotime($date_from);
-        $time_to = strtotime($date_to);
-        $timeframe = self::config()->date_timeframe;
-
-        if ($time_to >= $time_from) {
-            array_push($range, date('Y-m-d', $time_from));
-            while ($time_from < $time_to) {
-                $time_from += $timeframe;
-                array_push($range, date('Y-m-d', $time_from));
-            }
-        }
-
-        return $range;
-    }
 
     /**
      * Find the total spaces already booked between the two provided dates.
@@ -76,35 +41,50 @@ class SimpleBookings extends ViewableData
     {
         // First get a list of days between the start and end date
         $days = self::create_date_range_array($date_from, $date_to);
-        $final_bookings = ArrayList::create();
         $total_places = 0;
+        $product = BookableProduct::get()->byID($ID);
 
-        // Loop days and check we have spaces available by looping through
-        // all bookings with this product and checking now many have
-        // already been reserved
-        foreach ($days as $day) {
-            $bookings = Booking::get()->filter(array(
-                "Start:LessThanOrEqual" => $day,
-                "End:GreaterThanOrEqual" => $day,
+        if ($product) {
+            // Get all bookings with a start date within
+            // the date range
+            $bookings_start = Booking::get()->filter(array(
+                "Start:LessThanOrEqual" => $date_to,
+                "Start:GreaterThanOrEqual" => $date_from,
                 "Products.ID" => $ID
             ));
 
-            foreach ($bookings as $booking) {
-                $final_bookings->add($booking);
+            // Get all bookings with an end date within
+            // the date range
+            $bookings_end = Booking::get()->filter(array(
+                "End:LessThanOrEqual" => $date_to,
+                "End:GreaterThanOrEqual" => $date_from,
+                "Products.ID" => $ID
+            ));
+
+            // Create a new list of all bookings and clean it
+            // of duplicates
+            $all_bookings = ArrayList::create();
+            $all_bookings->merge($bookings_start);
+            $all_bookings->merge($bookings_end);
+            $all_bookings->removeDuplicates();
+            
+            // Now get all products inside these bookings that
+            // match our date range and tally the results
+            foreach ($all_bookings as $booking) {
+                foreach ($booking->Products() as $match_product) {
+                    $start_stamp = strtotime($date_from);
+                    $end_stamp = strtotime($date_to);
+                    $prod_start_stamp = strtotime($match_product->Start);
+                    $prod_end_stamp = strtotime($match_product->End);
+
+                    if (
+                        $prod_start_stamp >= $start_stamp && $prod_start_stamp <= $end_stamp ||
+                        $prod_end_stamp >= $start_stamp && $prod_end_stamp <= $end_stamp
+                    ) {
+                        $total_places += $match_product->BookedQTY;
+                    }
+                }
             }
-        }
-
-        $final_bookings->removeDuplicates();
-
-        // Now loop through the bookings and check the tally the total
-        // quantity of bookings
-        foreach ($final_bookings as $booking) {
-            $matched_product = $booking
-                ->Products()
-                ->filter("ID", $ID)
-                ->first();
-
-            $total_places = $total_places + $matched_product->BookedQTY;
         }
 
         return $total_places;

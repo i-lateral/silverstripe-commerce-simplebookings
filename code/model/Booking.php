@@ -3,8 +3,8 @@
 class Booking extends DataObject implements PermissionProvider
 {
     private static $db = array(
-        "Start" => "Date",
-        "End"   => "Date"
+        "Start" => "SS_Datetime",
+        "End"   => "SS_Datetime"
     );
 
     private static $has_one = array(
@@ -13,13 +13,15 @@ class Booking extends DataObject implements PermissionProvider
     );
 
     private static $many_many = array(
-        "Products" => "BookableProduct" 
+        "Products" => "BookableProduct"
     );
 
     private static $many_many_extraFields = array(
         "Products" => array(
             "BookedQTY" => "Int",
-            "OverBooked"=> "Int"
+            "OverBooked"=> "Int",
+            "Start" => "SS_Datetime",
+            "End"   => "SS_Datetime"
         )
     );
 
@@ -181,28 +183,14 @@ class Booking extends DataObject implements PermissionProvider
                 ),
                 'Start'
             );
-            
-
-            $fields->removeByName("Start");
-            $fields->removeByName("End");
 
             $start_field
+                ->getDateField()
                 ->setConfig("showcalendar", true);
 
             $end_field
+                ->getDateField()
                 ->setConfig("showcalendar", true);
-
-            $dates_field = CompositeField::create(
-                $start_field,
-                $end_field
-            )->setColumnCount(2)
-            ->setTitle("DatesField")
-            ->addExtraClass("booking-dates-field");
-
-            $fields->addFieldToTab(
-                "Root.Main",
-                $dates_field
-            );
         }
 
         // Add editable fields to manage quantity
@@ -233,6 +221,14 @@ class Booking extends DataObject implements PermissionProvider
                     'BookedQTY' => array(
                         'field' => 'TextField',
                         'title' => _t("SimpleBookings.NumbertoBook", "Number to Book")
+                    ),
+                    'Start' => array(
+                        'field' => 'DateTimeField',
+                        'title' => _t("SimpleBookings.StartDateTime", "Start Date/Time")
+                    ),
+                    'End' => array(
+                        'field' => 'DateTimeField',
+                        'title' => _t("SimpleBookings.EndDateTime", "End Date/Time")
                     ),
                     'OverBooked' => array(
                         'field' => 'ReadonlyField',
@@ -435,18 +431,36 @@ class Booking extends DataObject implements PermissionProvider
 
         foreach ($this->Products() as $product) {
             $quantity = $product->BookedQty;
-            $spaces = SimpleBookings::get_total_booked_spaces($this->Start, $this->End, $product->ID);
+            $start = ($product->Start) ? $product->Start : $this->Start;
+            $end = ($product->End) ? $product->End : $this->End;
+            $start_stamp = strtotime($start);
+            $end_stamp = strtotime($end);
+            $spaces = SimpleBookings::get_total_booked_spaces($start, $end, $product->ID);
             $diff = $spaces - $product->AvailablePlaces;
 
-            if ($diff > 0) {
-                $this->Products()->add(
-                    $product,
-                    array(
-                        "BookedQty" => $quantity,
-                        "OverBooked"=> $diff
-                    )
-                );
+            // Dont allow products to be booked outside of this
+            // Bookings time scale
+            if ($start_stamp < strtotime($this->Start) || $start_stamp > strtotime($this->End)) {
+                $start = $this->Start;
             }
+
+            if ($end_stamp > strtotime($this->End) || $end_stamp < strtotime($this->Start)) {
+                $end = $this->End;
+            }
+
+            if ($diff < 0) {
+                $diff = 0;
+            }
+
+            $this->Products()->add(
+                $product,
+                array(
+                    "BookedQty" => $quantity,
+                    "OverBooked"=> $diff,
+                    "Start" => $start,
+                    "End" => $end
+                )
+            );
         }
     }
 
