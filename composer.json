@@ -16,6 +16,7 @@
     },
     "require": {
         "silverstripe/framework": ">=3.1",
+        "i-lateral/silverstripe-commerce": "3.0.*@dev",
         "silverstripe-australia/gridfieldextensions": "1.*",
         "silverstripe/gridfield-addons": "*",
         "burnbright/silverstripe-hasonefield": "*"

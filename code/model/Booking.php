@@ -19,14 +19,13 @@ class Booking extends DataObject implements PermissionProvider
     private static $many_many_extraFields = array(
         "Products" => array(
             "BookedQTY" => "Int",
-            "OverBooked"=> "Int",
             "Start" => "SS_Datetime",
             "End"   => "SS_Datetime"
         )
     );
 
     private static $casting = array(
-        "OverBooked"    => "Boolean",
+        "Overbooked"    => "Boolean",
         "ProductsHTML"  => "HTMLText",
         "TotalCost"     => "Currency"
     );
@@ -106,15 +105,15 @@ class Booking extends DataObject implements PermissionProvider
      */
     public function getOverBooked()
     {
-        $overbooked = 0;
+        $overbooked = false;
 
         foreach ($this->Products() as $product) {
-            if ($product->OverBooked) {
-                $overbooked += $product->OverBooked;
+            if ($product->PlacesRemaining($product->Start, $product->End) < 0) {
+                $overbooked = true;
             }
         }
 
-        return ($overbooked > 0) ? true : false;
+        return $overbooked;
     }
 
     /**
@@ -230,16 +229,12 @@ class Booking extends DataObject implements PermissionProvider
                     'End' => array(
                         'field' => 'DateTimeField',
                         'title' => _t("SimpleBookings.EndDateTime", "End Date/Time")
-                    ),
-                    'OverBooked' => array(
-                        'field' => 'ReadonlyField',
-                        'title' => _t("SimpleBookings.OverBooked", "Overbooked")
                     )
                 ));
             
             $alerts = array(
-				'OverBooked' => array(
-					'comparator' => 'greater',
+				'PlacesRemaining' => array(
+					'comparator' => 'less',
 					'patterns' => array(
 						'0' => array(
 							'status' => 'alert',
@@ -431,13 +426,11 @@ class Booking extends DataObject implements PermissionProvider
         parent::onBeforeWrite();
 
         foreach ($this->Products() as $product) {
-            $quantity = $product->BookedQty;
+            $quantity = $product->BookedQTY;
             $start = ($product->Start) ? $product->Start : $this->Start;
             $end = ($product->End) ? $product->End : $this->End;
             $start_stamp = strtotime($start);
             $end_stamp = strtotime($end);
-            $spaces = SimpleBookings::get_total_booked_spaces($start, $end, $product->ID);
-            $diff = $spaces - $product->AvailablePlaces;
 
             // Dont allow products to be booked outside of this
             // Bookings time scale
@@ -449,6 +442,15 @@ class Booking extends DataObject implements PermissionProvider
                 $end = $this->End;
             }
 
+            $spaces = $product->getBookedPlaces($start, $end);
+            $diff = ($quantity + $spaces) - $product->AvailablePlaces;
+
+            error_log("Start: " . $start);
+            error_log("End: " . $end);
+            error_log("Spaces: " . $spaces);
+            error_log("Available: " . $product->AvailablePlaces);
+            error_log("Quantity: " . $quantity);
+
             if ($diff < 0) {
                 $diff = 0;
             }
@@ -456,7 +458,7 @@ class Booking extends DataObject implements PermissionProvider
             $this->Products()->add(
                 $product,
                 array(
-                    "BookedQty" => $quantity,
+                    "BookedQTY" => $quantity,
                     "OverBooked"=> $diff,
                     "Start" => $start,
                     "End" => $end

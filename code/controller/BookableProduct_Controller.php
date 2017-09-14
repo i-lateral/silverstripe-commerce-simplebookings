@@ -107,15 +107,9 @@ class BookableProduct_Controller extends Product_Controller
                 $object->PricingPeriod
             ));
 
-            $total_booked_places = SimpleBookings::get_total_booked_spaces(
-                $data["StartDate"],
-                $data["EndDate"],
-                $object->ID
-            );
-
             // If spaces are available, then we need to setup our shopping cart,
             // else  return with an error
-            if ($total_booked_places + $data["Quantity"] <= $object->AvailablePlaces) {
+            if ($object->isAvailable($data["StartDate"],$data["EndDate"],$data["Quantity"])) {
                 if($object->TaxRateID && $object->TaxRate()->Amount) {
                     $tax_rate = $object->TaxRate()->Amount;
                 } else {
