@@ -18,7 +18,7 @@
         "silverstripe/framework": ">=3.1",
         "i-lateral/silverstripe-commerce": "3.0.*@dev",
         "symbiote/silverstripe-gridfieldextensions": "2.*",
-        "smindel/silverstripe-gridfield-addons": "*",
+        "silverstripe/gridfield-addons": "*",
         "briceburg/silverstripe-pickerfield":"*"
     },
     "suggest": {
