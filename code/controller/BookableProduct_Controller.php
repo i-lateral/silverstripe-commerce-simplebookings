@@ -142,7 +142,7 @@ class BookableProduct_Controller extends Product_Controller
                     "TaxRate" => $tax_rate,
                     "Image" => $object->Images()->first(),
                     "StockID" => $object->StockID,
-                    "CustomisationArray" => $customisations,
+                    "Customisation" => $customisations,
                     "ID" => $object->ID,
                     "Weight" => $object->Weight,
                     "ClassName" => $object->ClassName,

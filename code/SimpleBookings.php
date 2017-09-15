@@ -80,6 +80,14 @@ class SimpleBookings extends ViewableData
                 "Products.ID" => $ID
             ));
 
+            // Get all bookings with a start and end date within
+            // the date range
+            $bookings_within = Booking::get()->filter(array(
+                "Start:LessThanOrEqual" => $date_from,
+                "End:GreaterThanOrEqual" => $date_to,
+                "Products.ID" => $ID
+            ));
+
             // Get all bookings with an end date within
             // the date range
             $bookings_end = Booking::get()->filter(array(
@@ -93,6 +101,7 @@ class SimpleBookings extends ViewableData
             $all_bookings = ArrayList::create();
             $all_bookings->merge($bookings_start);
             $all_bookings->merge($bookings_end);
+            $all_bookings->merge($bookings_within);
             $all_bookings->removeDuplicates();
             
             // Now get all products inside these bookings that
@@ -106,6 +115,7 @@ class SimpleBookings extends ViewableData
 
                     if (
                         $prod_start_stamp >= $start_stamp && $prod_start_stamp <= $end_stamp ||
+                        $prod_start_stamp <= $start_stamp && $prod_end_stamp >= $end_stamp ||
                         $prod_end_stamp >= $start_stamp && $prod_end_stamp <= $end_stamp
                     ) {
                         $total_places += $match_product->BookedQTY;
