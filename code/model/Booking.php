@@ -385,8 +385,10 @@ class Booking extends DataObject implements PermissionProvider
                     "Deliverable" => false
                 ));
                 $item->ParentID = $order->ID;
-                $item->write();
+            } else {
+                $item->Quantity = $product->BookedQTY;
             }
+            $item->write();
 
             // Setup customisation on an order item
             $customisation = OrderItemCustomisation::create(array(
