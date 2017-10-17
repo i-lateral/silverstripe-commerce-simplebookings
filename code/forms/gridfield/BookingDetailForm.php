@@ -35,7 +35,7 @@ class BookingDetailForm_ItemRequest extends GridFieldDetailForm_ItemRequest
 			$actions = $form->Actions();
 
             // Add a button to view this items order (if available)
-            if ($this->record->OrderID) {
+            if ($this->record->Order()->exists()) {
                 $actions->insertBefore(
                     FormAction::create(
                         'doViewOrder',
@@ -54,16 +54,14 @@ class BookingDetailForm_ItemRequest extends GridFieldDetailForm_ItemRequest
             }
 
             // Add right aligned total field
-            $total_obj = new Currency("TotalCost");
-            $total_obj->setValue($this->record->TotalCost);
-
-            $total = '<span class="cms-booking-total ui-corner-all ui-button-text-only">';
-            $total .= "<strong>Total:</strong> {$total_obj->Nice()}";
-            $total .= '</span>';
+            $total = $this->record->obj("TotalCost");
+            $total_html = '<span class="cms-booking-total ui-corner-all ui-button-text-only">';
+            $total_html .= "<strong>Total:</strong> {$total->Nice()}";
+            $total_html .= '</span>';
 
             $actions->push(LiteralField::create(
                 "TotalCost",
-                $total
+                $total_html
             ));
 
         }

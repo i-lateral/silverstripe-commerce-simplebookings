@@ -124,20 +124,13 @@ class Booking extends DataObject implements PermissionProvider
      */
     public function getTotalCost()
     {
-        $price = 0;
+        $order = $this->Order();
 
-        foreach ($this->Products() as $product) {
-            $total_time = count(SimpleBookings::create_date_range_array(
-                $product->Start,
-                $product->End,
-                $product->PricingPeriod
-            ));
-
-            $single_price = $product->PriceAndTax;
-            $price = ($single_price * $product->BookedQTY) * $total_time;
+        if ($order->exists()) {
+            return $order->obj("Total")->getValue();
         }
 
-        return $price;
+        return 0;
     }
 
     /**
@@ -334,6 +327,100 @@ class Booking extends DataObject implements PermissionProvider
     }
 
     /**
+     * Syncronise this booking with an order
+     *
+     * @return void
+     */
+    public function sync()
+    {
+        // If we have no order assigned, generate an estimate and
+        // link to this booking
+        if (!$this->Order()->exists()) {
+            $order = Estimate::create();
+            $order->write();
+        } else {
+            $order = $this->Order();
+        }
+        
+        foreach ($this->Products() as $product) {
+            $total_time = count(SimpleBookings::create_date_range_array(
+                $product->Start,
+                $product->End,
+                $product->PricingPeriod
+            ));
+            $item = null;
+
+            // Clean and reset any matched products
+            foreach ($order->Items() as $order_item) {
+                $stock_item = $order_item->FindStockItem();
+
+                if ($stock_item && $stock_item->ID == $product->ID) {
+                    $item = $order_item;
+
+                    $items_to_remove = [
+                        _t("SimpleBookings.StartDate", "Start Date"),
+                        _t("SimpleBookings.EndDate", "End Date"),
+                        _t("SimpleBookings.LengthOfTime", "Length of Time")
+                    ];
+
+                    foreach ($order_item->Customisations() as $customisation) {
+                        if (in_array($customisation->Title, $items_to_remove)) {
+                            $customisation->delete();
+                        }
+                    }
+                }
+            }
+
+            // If we haven't found an existing order item, create a new one
+            if (!$item) {
+                $item = OrderItem::create(array(
+                    "Key" => $product->ID,
+                    "Title" => $product->Title,
+                    "Quantity" => $product->BookedQTY,
+                    "Price" => $product->Price,
+                    "TaxRate" => $product->TaxPercent,
+                    "StockID" => $product->StockID,
+                    "ProductClass" => $product->ClassName,
+                    "Stocked" => false,
+                    "Deliverable" => false
+                ));
+                $item->ParentID = $order->ID;
+                $item->write();
+            }
+
+            // Setup customisation on an order item
+            $customisation = OrderItemCustomisation::create(array(
+                "Title" => _t("SimpleBookings.StartDate", "Start Date"),
+                "Value" => $product->Start,
+                "Price" => 0
+            ));
+            $customisation->write();
+            $item->Customisations()->add($customisation);
+
+            $customisation = OrderItemCustomisation::create(array(
+                "Title" => _t("SimpleBookings.EndDate", "End Date"),
+                "Value" => $product->End,
+                "Price" => 0
+            ));
+            $customisation->write();
+            $item->Customisations()->add($customisation);
+
+            $customisation = OrderItemCustomisation::create(array(
+                "Title" => _t("SimpleBookings.LengthOfTime", "Length of Time"),
+                "Value" => $total_time,
+                "Price" => ($product->Price * $total_time) - $product->Price
+            ));
+            $customisation->write();
+            $item->Customisations()->add($customisation);
+        }
+
+        if (!$this->Order()->exists()) {
+            $this->OrderID = $order->ID;
+            $this->write();
+        }
+    }
+
+    /**
      * Only users with VIEW admin rights can view
      *
      * @return Boolean
@@ -418,13 +505,16 @@ class Booking extends DataObject implements PermissionProvider
     }
 
     /**
-     * Check all products and set any flags needed
+     * Perform pre-write database functions
      *
+     * @return void
      */
     public function onBeforeWrite()
     {
         parent::onBeforeWrite();
 
+        // Check availability of assigned products and ensure they are
+        // booked within the boundries of the booking
         foreach ($this->Products() as $product) {
             $quantity = $product->BookedQTY;
             $start = ($product->Start) ? $product->Start : $this->Start;
@@ -445,12 +535,6 @@ class Booking extends DataObject implements PermissionProvider
             $spaces = $product->getBookedPlaces($start, $end);
             $diff = ($quantity + $spaces) - $product->AvailablePlaces;
 
-            error_log("Start: " . $start);
-            error_log("End: " . $end);
-            error_log("Spaces: " . $spaces);
-            error_log("Available: " . $product->AvailablePlaces);
-            error_log("Quantity: " . $quantity);
-
             if ($diff < 0) {
                 $diff = 0;
             }
@@ -468,7 +552,19 @@ class Booking extends DataObject implements PermissionProvider
     }
 
     /**
-     * Create a Booking when the order is marked as paid
+     * Perform post write database functions
+     * 
+     * @return void
+     */
+    public function onAfterWrite()
+    {
+        parent::onAfterWrite();
+
+        $this->sync();
+    }
+
+    /**
+     * Perform post delete functions
      *
      */
     public function onAfterDelete()
