@@ -2,9 +2,16 @@
 
 class SimpleBookingOrderExtension extends DataExtension
 {
-    private static $has_one = array(
-        "Booking" => "Booking"
-    );
+    
+    /**
+     * Find a booking associated with this order (if it exists)
+     *
+     * @return Booking
+     */
+    public function Booking()
+    {
+        return Booking::get()->find("OrderID", $this->owner->ID);
+    }
 
     /**
      * Create a Booking when the order is marked as paid
@@ -18,10 +25,11 @@ class SimpleBookingOrderExtension extends DataExtension
             $end_title = _t("SimpleBookings.EndDate", "End Date");
             $start_date = null;
             $end_date = null;
+            $booking = $this->owner->Booking();
 
             // First see if this order contains bookable products
             foreach ($this->owner->Items() as $item) {
-                $product = $item->Match();
+                $product = $item->FindStockItem();
 
                 if ($product && $product instanceof BookableProduct) {
                     foreach ($item->Customisations() as $customisation) {
@@ -42,7 +50,7 @@ class SimpleBookingOrderExtension extends DataExtension
             }
 
             // If we have found bookable products
-            if ($products->exists()) {
+            if (!$booking && $products->exists()) {
                 $booking = Booking::create();
                 $booking->Start = $start_date;
                 $booking->End = $end_date;
@@ -58,15 +66,6 @@ class SimpleBookingOrderExtension extends DataExtension
 
                 $this->owner->BookingID = $booking->ID;
             }
-        }
-    }
-
-    public function onAfterDelete()
-    {
-        // Clean up any bookings that are associated with this order
-        foreach (Booking::get()->filter("OrderID", $this->owner->ID) as $booking) {
-            $booking->OrderID = 0;
-            $booking->write();
         }
     }
 }
