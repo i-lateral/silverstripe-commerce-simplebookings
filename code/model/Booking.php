@@ -42,6 +42,17 @@ class Booking extends DataObject implements PermissionProvider
     );
 
     /**
+     * Default sord order of records from the DB
+     *
+     * @var array
+     * @config
+     */
+    private static $default_sort = array(
+        "Start" => "DESC",
+        "End" => "DESC"
+    );
+
+    /**
      * Link to view this item in the CMS
      *
      * @return String
