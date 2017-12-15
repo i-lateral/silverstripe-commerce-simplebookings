@@ -95,6 +95,8 @@ class BookingAdmin extends ModelAdmin
                 ->addComponent(new BookingDetailForm());
         }
 
+        $this->extend('updateEditForm', $form);
+
         return $form;
     }
 
