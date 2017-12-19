@@ -69,7 +69,7 @@ class SimpleBookings extends ViewableData
     {
         // First get a list of days between the start and end date
         $total_places = 0;
-        $product = BookableProduct::get()->byID($ID);
+        $product = BookingResource::get()->byID($ID);
 
         if ($product) {
             // Get all bookings with a start date within
@@ -77,7 +77,7 @@ class SimpleBookings extends ViewableData
             $bookings_start = Booking::get()->filter(array(
                 "Start:LessThanOrEqual" => $date_to,
                 "Start:GreaterThanOrEqual" => $date_from,
-                "Products.ID" => $ID
+                "Resources.ID" => $ID
             ));
 
             // Get all bookings with a start and end date within
@@ -85,7 +85,7 @@ class SimpleBookings extends ViewableData
             $bookings_within = Booking::get()->filter(array(
                 "Start:LessThanOrEqual" => $date_from,
                 "End:GreaterThanOrEqual" => $date_to,
-                "Products.ID" => $ID
+                "Resources.ID" => $ID
             ));
 
             // Get all bookings with an end date within
@@ -93,7 +93,7 @@ class SimpleBookings extends ViewableData
             $bookings_end = Booking::get()->filter(array(
                 "End:LessThanOrEqual" => $date_to,
                 "End:GreaterThanOrEqual" => $date_from,
-                "Products.ID" => $ID
+                "Resources.ID" => $ID
             ));
 
             // Create a new list of all bookings and clean it
@@ -107,7 +107,7 @@ class SimpleBookings extends ViewableData
             // Now get all products inside these bookings that
             // match our date range and tally the results
             foreach ($all_bookings as $booking) {
-                foreach ($booking->Products() as $match_product) {
+                foreach ($booking->Resources() as $match_product) {
                     $start_stamp = strtotime($date_from);
                     $end_stamp = strtotime($date_to);
                     $prod_start_stamp = strtotime($match_product->Start);

@@ -83,7 +83,7 @@ class BookableProduct_Controller extends Product_Controller
         $customisations = array();
         
         $cart = ShoppingCart::get();
-        
+
         if ($object = $classname::get()->byID($id)) {
             // Check if we are trying to book less places than allowed
             if ($object->MinimumPlaces && $data["Quantity"] < $object->MinimumPlaces) {
@@ -107,9 +107,15 @@ class BookableProduct_Controller extends Product_Controller
                 $object->PricingPeriod
             ));
 
+            if ($resources = $object->Resources()) {
+                $resource = $resources->First();
+            } else {
+
+            }
+
             // If spaces are available, then we need to setup our shopping cart,
             // else  return with an error
-            if ($object->isAvailable($data["StartDate"],$data["EndDate"],$data["Quantity"])) {
+            if (!$resource || ($resource && $resource->isAvailable($data["StartDate"],$data["EndDate"],$data["Quantity"]))) {
                 if($object->TaxRateID && $object->TaxRate()->Amount) {
                     $tax_rate = $object->TaxRate()->Amount;
                 } else {

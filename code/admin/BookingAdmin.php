@@ -83,7 +83,7 @@ class BookingAdmin extends ModelAdmin
 					'patterns' => array(
 						'1' => array(
 							'status' => 'alert',
-							'message' => _t("SimpleBookings.OverBookedProduct", 'This has an Over Booked product'),
+							'message' => _t("SimpleBookings.OverBookedResource", 'This has an Over Booked resource'),
 						),
 					)
 				)

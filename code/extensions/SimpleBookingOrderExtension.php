@@ -58,10 +58,15 @@ class SimpleBookingOrderExtension extends DataExtension
                 $booking->write();
 
                 foreach ($products as $product) {
-                    $booking->Products()->add(
-                        $product->Product,
-                        array("BookedQTY", $product->Quantity)
-                    );
+                    $resource = BookingResource::create();
+                    $resource->Title = $product->Product->Title;
+                    $resource->Start = $start_date;
+                    $resource->End = $end_date;
+                    $resource->ProductID = $product->Product->ID;
+                    $resource->BookedQTY = $product->Quantity;
+                    $resource->write();
+
+                    $booking->Resources()->add($resource);
                 }
 
                 $this->owner->BookingID = $booking->ID;

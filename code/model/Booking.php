@@ -13,15 +13,7 @@ class Booking extends DataObject implements PermissionProvider
     );
 
     private static $many_many = array(
-        "Products" => "BookableProduct"
-    );
-
-    private static $many_many_extraFields = array(
-        "Products" => array(
-            "BookedQTY" => "Int",
-            "Start" => "SS_Datetime",
-            "End"   => "SS_Datetime"
-        )
+        "Resources" => "BookingResource"
     );
 
     private static $casting = array(
@@ -93,12 +85,27 @@ class Booking extends DataObject implements PermissionProvider
         );
     }
 
+    public function getProducts()
+    {
+        $products = ArrayList::create();
+
+        foreach ($this->Resources() as $resource) {
+            if ($resource->ProductID && $product = BookableProduct::get()->byID($resource->ProductID)) {
+                $products->add($product);
+            }
+        }
+
+        return $products;
+    }
+
     public function getProductsHTML()
     {
         $html = "<ul>";
 
-        foreach ($this->Products() as $product) {
-            $html .= "<li>{$product->Title}: {$product->BookedQTY}</li>";
+        foreach ($this->Resources() as $resource) {
+            if ($resource->ProductID) {
+                $html .= "<li>{$resource->Product()->Title}: {$resource->BookedQTY}</li>";
+            }
         }
 
         $html .= "</ul>";
@@ -118,7 +125,7 @@ class Booking extends DataObject implements PermissionProvider
     {
         $overbooked = false;
 
-        foreach ($this->Products() as $product) {
+        foreach ($this->Resources() as $product) {
             if ($product->PlacesRemaining($product->Start, $product->End) < 0) {
                 $overbooked = true;
             }
@@ -198,29 +205,17 @@ class Booking extends DataObject implements PermissionProvider
         }
 
         // Add editable fields to manage quantity
-        $products_field = $fields->dataFieldByName("Products");
+        $resources_field = $fields->dataFieldByName("Resources");
 
-        if ($products_field) {
-            $config = $products_field->getConfig();
+        if ($resources_field) {
+            $config = $resources_field->getConfig();
 
             $editable_cols = new GridFieldEditableColumns();
             $editable_cols
                 ->setDisplayFields(array(
-                    'CMSThumbnail' => array(
-                        'field' => 'LiteralField',
-                        'title' => _t("SimpleBookings.Thumbnail", "Thumbnail")
-                    ),
                     'Title' => array(
                         'field' => 'ReadonlyField',
                         'title' => _t("SimpleBookings.Title", "Title")
-                    ),
-                    'Price' => array(
-                        'field' => 'ReadonlyField',
-                        'title' => _t("SimpleBookings.Price", "Price")
-                    ),
-                    'StockID' => array(
-                        'field' => 'ReadonlyField',
-                        'title' => _t("SimpleBookings.StockID", "Stock ID")
                     ),
                     'BookedQTY' => array(
                         'field' => 'TextField',
@@ -242,7 +237,7 @@ class Booking extends DataObject implements PermissionProvider
 					'patterns' => array(
 						'0' => array(
 							'status' => 'alert',
-							'message' => _t("SimpleBookings.OverBooked", 'This product is Over Booked'),
+							'message' => _t("SimpleBookings.OverBooked", 'This resource is Over Booked'),
 						),
 					)
 				)
@@ -259,11 +254,11 @@ class Booking extends DataObject implements PermissionProvider
                 ->addComponent(new GridFieldDeleteAction(true))
                 ->addComponent(new GridFieldRecordHighlighter($alerts));
             
-            $fields->removeByName("Products");
+            $fields->removeByName("Resources");
             
             $fields->addFieldToTab(
                 "Root.Main",
-                $products_field
+                $resources_field
             );
         }
 
@@ -344,6 +339,8 @@ class Booking extends DataObject implements PermissionProvider
      */
     public function sync()
     {
+        $write = false;
+
         // If we have no order assigned, generate an estimate and
         // link to this booking
         if (!$this->Order()->exists()) {
@@ -353,7 +350,7 @@ class Booking extends DataObject implements PermissionProvider
             $order = $this->Order();
         }
         
-        foreach ($this->Products() as $product) {
+        foreach ($this->getProducts() as $product) {
             $total_time = count(SimpleBookings::create_date_range_array(
                 $product->Start,
                 $product->End,
@@ -427,8 +424,17 @@ class Booking extends DataObject implements PermissionProvider
             $item->Customisations()->add($customisation);
         }
 
+        if ($this->CustomerID != $order->CustomerID) {
+            $this->CustomerID = $order->CustomerID;
+            $write = true;
+        }
+
         if (!$this->Order()->exists()) {
             $this->OrderID = $order->ID;
+            $write = true;
+        }
+
+        if ($write) {
             $this->write();
         }
     }
@@ -528,7 +534,7 @@ class Booking extends DataObject implements PermissionProvider
 
         // Check availability of assigned products and ensure they are
         // booked within the boundries of the booking
-        foreach ($this->Products() as $product) {
+        foreach ($this->Resources() as $product) {
             $quantity = $product->BookedQTY;
             $start = ($product->Start) ? $product->Start : $this->Start;
             $end = ($product->End) ? $product->End : $this->End;
@@ -546,21 +552,13 @@ class Booking extends DataObject implements PermissionProvider
             }
 
             $spaces = $product->getBookedPlaces($start, $end);
-            $diff = ($quantity + $spaces) - $product->AvailablePlaces;
+            $diff = ($quantity + $spaces) - $product->getAvailablePlaces();
 
             if ($diff < 0) {
                 $diff = 0;
             }
 
-            $this->Products()->add(
-                $product,
-                array(
-                    "BookedQTY" => $quantity,
-                    "OverBooked"=> $diff,
-                    "Start" => $start,
-                    "End" => $end
-                )
-            );
+            $this->Resources()->add($product);
         }
     }
 
