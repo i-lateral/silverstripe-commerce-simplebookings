@@ -94,6 +94,24 @@ class BookableProduct extends Product
     }
 
     /**
+     * Get the number of booked places this product has between the
+     * start and end times.
+     *
+     * @param string $start Start date and time (preferably in standard DB format)
+     * @param string $end End date and time (preferably in standard DB format)
+     * @return Int
+     */
+    public function getBookedPlaces($start, $end)
+    {
+        return SimpleBookings::get_total_booked_spaces(
+            $start,
+            $end,
+            $this->ID
+        );
+    }
+
+
+    /**
      * Ensure that stockable settings are disabled on save.
      *
      */
