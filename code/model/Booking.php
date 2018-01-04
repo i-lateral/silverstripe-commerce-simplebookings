@@ -12,7 +12,7 @@ class Booking extends DataObject implements PermissionProvider
         "Customer" => "Member"
     );
 
-    private static $many_many = array(
+    private static $has_many = array(
         "Resources" => "BookingResource"
     );
 
