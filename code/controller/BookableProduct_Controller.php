@@ -35,6 +35,10 @@ class BookableProduct_Controller extends Product_Controller
         );
 
         $fields->push(
+            CalendarDatePickerField::create("Calendar")
+        );
+
+        $fields->push(
             QuantityField::create(
                 'Quantity',
                 _t(
