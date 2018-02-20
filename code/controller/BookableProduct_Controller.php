@@ -21,7 +21,7 @@ class BookableProduct_Controller extends Product_Controller
                 2
             )
         );
-        $calendar = CalendarDatePickerField::create("Calendar","Calendar",null,$object);
+        $calendar = CalendarField::create("Calendar","Calendar",null,$object);
         $calendar->setForm($form);
         $calendar->setStartField(
             HiddenField::create("StartDate")
