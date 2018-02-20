@@ -1,0 +1,69 @@
+#Form_Form_Calendar table {
+  text-align: center;
+  position: relative;
+}
+#Form_Form_Calendar table .not-available {
+  background: rgba(255, 0, 0, 0.5);
+}
+#Form_Form_Calendar table .available {
+  background: rgba(0, 128, 0, 0.5);
+}
+#Form_Form_Calendar table .available:hover,
+#Form_Form_Calendar table .available.hover {
+  cursor: pointer;
+  background: rgba(0, 128, 0, 0.75);
+}
+#Form_Form_Calendar table .selected {
+  background: rgba(0, 0, 255, 0.75);
+}
+#Form_Form_Calendar table .preloader-holder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.1);
+}
+#Form_Form_Calendar table .preloader-holder .preloader {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  font-size: 3rem;
+  -webkit-transform: translate(-50%);
+  -ms-transform: translate(-50%);
+  transform: translate(-50%);
+}
+#Form_Form_Calendar table .preloader-holder .preloader span {
+  display: block;
+  -webkit-transform-origin: center center;
+  -ms-transform-origin: center center;
+  transform-origin: center center;
+  -webkit-animation-name: spin;
+  animation-name: spin;
+  -webkit-animation-duration: 1000ms;
+  animation-duration: 1000ms;
+  -webkit-animation-iteration-count: infinite;
+  animation-iteration-count: infinite;
+  -webkit-animation-timing-function: linear;
+  animation-timing-function: linear;
+}
+@-webkit-keyframes spin {
+  from {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@keyframes spin {
+  from {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}

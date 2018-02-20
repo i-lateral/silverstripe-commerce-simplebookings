@@ -21,22 +21,16 @@ class BookableProduct_Controller extends Product_Controller
                 2
             )
         );
-        
-        $fields->push(
-            BookingDateField::create("StartDate")
-                ->setConfig('dateformat', 'dd-MM-yyyy')
-                ->setConfig('showcalendar', true)
+        $calendar = CalendarDatePickerField::create("Calendar","Calendar",null,$object);
+        $calendar->setForm($form);
+        $calendar->setStartField(
+            HiddenField::create("StartDate")
+        );
+        $calendar->setEndField(
+            HiddenField::create("EndDate")
         );
 
-        $fields->push(
-            BookingDateField::create("EndDate")
-                ->setConfig('dateformat', 'dd-MM-yyyy')
-                ->setConfig('showcalendar', true)
-        );
-
-        $fields->push(
-            CalendarDatePickerField::create("Calendar")
-        );
+        $fields->push($calendar);
 
         $fields->push(
             QuantityField::create(
