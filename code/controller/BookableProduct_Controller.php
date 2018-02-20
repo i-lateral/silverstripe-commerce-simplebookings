@@ -23,12 +23,6 @@ class BookableProduct_Controller extends Product_Controller
         );
         $calendar = CalendarField::create("Calendar","Calendar",null,$object);
         $calendar->setForm($form);
-        $calendar->setStartField(
-            HiddenField::create("StartDate")
-        );
-        $calendar->setEndField(
-            HiddenField::create("EndDate")
-        );
 
         $fields->push($calendar);
 
