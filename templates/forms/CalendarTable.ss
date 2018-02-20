@@ -12,7 +12,7 @@
                     <div class="text-right size1of2 col-xs-6 unit">$YearField</div>
                 </div>
             </td>
-            <th class="text-right"><a class="direction-link" href="$NextLink">&gt;&gt;</a></td>
+            <th><a class="direction-link" href="$NextLink">&gt;&gt;</a></td>
         </tr>
         <tr class="calendar-row">
             <% loop $DayHeadings %>
@@ -36,6 +36,20 @@
             <% end_loop %>
         </tr>
     </table>
+
+    <div class="calendar-key">
+        <div class="row line">
+            <div class="unit size1of2 col-xs-6">
+                <p><span class="color-swatch available"></span> Available</p>
+            </div>
+            <div class="unit size1of2 col-xs-6">
+                <p><span class="color-swatch not-available"></span> Unavailable</p>
+            </div>
+            <div class="unit size1of2 col-xs-6">
+                <p><span class="color-swatch selected"></span> Selected</p>
+            </div>
+        </div>
+    </div>
 
     <div id="CalendarStart">
         $StartField

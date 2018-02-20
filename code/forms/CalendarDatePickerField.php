@@ -15,7 +15,7 @@ class CalendarDatePickerField extends FormField
     protected $product;
 
     protected $options = [
-        'day_format' => 'l',
+        'day_format' => 'D',
         'month_format' => 'M',
         'year_format' => 'Y',
         'allow_past_dates' => false,
