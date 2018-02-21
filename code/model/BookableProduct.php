@@ -48,7 +48,7 @@ class BookableProduct extends Product
     );
 
     private static $belongs_many_many = array(
-        "Bookings" => "Booking"
+        "Allocations" => "ResourceAllocation"
     );
 
     public function populateDefaults()
@@ -109,7 +109,6 @@ class BookableProduct extends Product
             $this->ID
         );
     }
-
 
     /**
      * Ensure that stockable settings are disabled on save.

@@ -23,7 +23,8 @@ class BookingAdmin extends ModelAdmin
     private static $default_end_time = "23:59";
 
     private static $managed_models = array(
-        'Booking' => array('title' => 'Bookings')
+        'Booking' => array('title' => 'Bookings'),
+        'ResourceAllocation' => array('title' => 'Resource Allocations')
     );
 
     private static $model_importers = array(

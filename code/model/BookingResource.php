@@ -10,7 +10,8 @@ class BookingResource extends DataObject
     );
 
     private static $has_one = array(
-        "Product" => "BookableProduct"
+        "Product" => "BookableProduct",
+        "Booking" => 'Booking'
     );
 
     /**
@@ -26,7 +27,7 @@ class BookingResource extends DataObject
         return SimpleBookings::get_total_booked_spaces(
             $start,
             $end,
-            $this->ID
+            $this->ProductID
         );
     }
 

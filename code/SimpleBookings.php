@@ -69,7 +69,7 @@ class SimpleBookings extends ViewableData
     {
         // First get a list of days between the start and end date
         $total_places = 0;
-        $product = BookingResource::get()->byID($ID);
+        $product = BookableProduct::get()->byID($ID);
 
         if ($product) {
             // Get all bookings with a start date within
@@ -77,7 +77,7 @@ class SimpleBookings extends ViewableData
             $bookings_start = Booking::get()->filter(array(
                 "Start:LessThanOrEqual" => $date_to,
                 "Start:GreaterThanOrEqual" => $date_from,
-                "Resources.ID" => $ID
+                "Resources.ProductID" => $ID
             ));
 
             // Get all bookings with a start and end date within
@@ -85,7 +85,7 @@ class SimpleBookings extends ViewableData
             $bookings_within = Booking::get()->filter(array(
                 "Start:LessThanOrEqual" => $date_from,
                 "End:GreaterThanOrEqual" => $date_to,
-                "Resources.ID" => $ID
+                "Resources.ProductID" => $ID
             ));
 
             // Get all bookings with an end date within
@@ -93,7 +93,7 @@ class SimpleBookings extends ViewableData
             $bookings_end = Booking::get()->filter(array(
                 "End:LessThanOrEqual" => $date_to,
                 "End:GreaterThanOrEqual" => $date_from,
-                "Resources.ID" => $ID
+                "Resources.ProductID" => $ID
             ));
 
             // Create a new list of all bookings and clean it
@@ -107,7 +107,8 @@ class SimpleBookings extends ViewableData
             // Now get all products inside these bookings that
             // match our date range and tally the results
             foreach ($all_bookings as $booking) {
-                foreach ($booking->Resources() as $match_product) {
+                $resources = $booking->Resources()->Filter('ProductID',$ID);
+                foreach ($resources as $match_product) {
                     $start_stamp = strtotime($date_from);
                     $end_stamp = strtotime($date_to);
                     $prod_start_stamp = strtotime($match_product->Start);
@@ -121,6 +122,66 @@ class SimpleBookings extends ViewableData
                         $total_places += $match_product->BookedQTY;
                     }
                 }
+            }
+
+            // Get all bookings with a start date within
+            // the date range
+            $allocations_start = ResourceAllocation::get()->filter(array(
+                "Start:LessThanOrEqual" => $date_to,
+                "Start:GreaterThanOrEqual" => $date_from
+            ));
+
+            // Get all bookings with a start and end date within
+            // the date range
+            $allocations_within = ResourceAllocation::get()->filter(array(
+                "Start:LessThanOrEqual" => $date_from,
+                "End:GreaterThanOrEqual" => $date_to
+            ));
+
+            // Get all bookings with an end date within
+            // the date range
+            $allocations_end = ResourceAllocation::get()->filter(array(
+                "End:LessThanOrEqual" => $date_to,
+                "End:GreaterThanOrEqual" => $date_from
+            ));
+
+            // Create a new list of all bookings and clean it
+            // of duplicates
+            $all_allocations = ArrayList::create();
+            $all_allocations->merge($allocations_start);
+            $all_allocations->merge($allocations_end);
+            $all_allocations->merge($allocations_within);
+            $all_allocations->removeDuplicates();
+
+            $all_allocated = false;
+
+            foreach ($all_allocations as $allocation) {
+                if ($allocation->AllocateAll) {
+                    $all_allocated = true;
+                    break;
+                }
+                $resources = $allocation->Resources()->Filter('ID',$ID);
+                foreach ($resources as $product) {
+                    if ($product->AllocateAll) {
+                        $all_allocated = true;
+                        break;
+                    }
+                    $start_stamp = strtotime($date_from);
+                    $end_stamp = strtotime($date_to);
+                    $alloc_start_stamp = strtotime($allocation->Start);
+                    $alloc_end_stamp = strtotime($allocation->End);
+                    if (
+                        $prod_start_stamp >= $start_stamp && $prod_start_stamp <= $end_stamp ||
+                        $prod_start_stamp <= $start_stamp && $prod_end_stamp >= $end_stamp ||
+                        $prod_end_stamp >= $start_stamp && $prod_end_stamp <= $end_stamp
+                    ) {
+                        $total_places += $product->Quantity;
+                    }
+                }
+            }
+
+            if ($all_allocated) {
+                $total_places = $product->AvailablePlaces;
             }
         }
 
