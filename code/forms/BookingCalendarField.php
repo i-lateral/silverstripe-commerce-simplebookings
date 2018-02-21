@@ -70,9 +70,11 @@ class BookingCalendarField extends CalendarField
                     ) {
                         $day->Availability = 'available';
                         $day->Spaces = $spaces;
+                        $day->Lock = false;
                     } else {
                         $day->Availability = 'not-available'; 
-                        $day->Spaces = 0;                   
+                        $day->Spaces = 0;
+                        $day->Lock = true;                   
                     }
                 }
             }
