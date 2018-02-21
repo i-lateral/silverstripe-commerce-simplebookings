@@ -53,16 +53,27 @@ class BookingCalendarField extends CalendarField
         
         if ($product) {
             foreach ($days as $day) {
-                $spaces = $product->AvailablePlaces - $product->getBookedPlaces($day->Date->format("Y-m-d 00:00:00"), $day->Date->format("Y-m-d 23:59:59"));
-                if (
-                    ($spaces > 0 && $day->Date->format("Y-m-d H:i:s") > $today->format("Y-m-d H:i:s")) 
-                    && !in_array($day->Date->format("Y-m-d"),$this->disabled_dates)
-                ) {
-                    $day->Availability = 'available';
-                    $day->Spaces = $spaces;
-                } else {
-                    $day->Availability = 'not-available'; 
-                    $day->Spaces = 0;                   
+                $start = new SS_DateTime();
+                $start->setValue($day->Date->format("Y-m-d 00:00:00"));
+                $end = new SS_DateTime();
+                $end->setValue($day->Date->format("Y-m-d 23:59:59"));
+
+                if ($resources = $product->Resources()) {
+                    $resource = $resources->First();
+                }
+
+                if ($resource) {
+                    $spaces = $resource->PlacesRemaining($start->format("Y-m-d H:i:s"), $end->format("Y-m-d H:i:s"));
+                    if (
+                        ($spaces > 0 && $day->Date->format("Y-m-d H:i:s") > $today->format("Y-m-d H:i:s")) 
+                        && !in_array($day->Date->format("Y-m-d"),$this->disabled_dates)
+                    ) {
+                        $day->Availability = 'available';
+                        $day->Spaces = $spaces;
+                    } else {
+                        $day->Availability = 'not-available'; 
+                        $day->Spaces = 0;                   
+                    }
                 }
             }
         }
