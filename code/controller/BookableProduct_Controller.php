@@ -21,7 +21,7 @@ class BookableProduct_Controller extends Product_Controller
                 2
             )
         );
-        $calendar = CalendarField::create("Calendar","Calendar",null,$object);
+        $calendar = BookingCalendarField::create("Calendar","Calendar",null,$object);
         $calendar->setForm($form);
 
         $fields->push($calendar);
@@ -44,8 +44,8 @@ class BookableProduct_Controller extends Product_Controller
 
     public function doAddItemToCart($data, $form)
     {
-        $time_start = strtotime($data["StartDate"]);
-        $time_end = strtotime($data["EndDate"]);
+        $time_start = strtotime($data["Calendar"]['StartDate']);
+        $time_end = strtotime($data["Calendar"]['EndDate']);
         $time_now = strtotime("today");
         
         // Check the start date is in the future
@@ -94,8 +94,8 @@ class BookableProduct_Controller extends Product_Controller
             }
 
             $total_time = count(SimpleBookings::create_date_range_array(
-                $data["StartDate"],
-                $data["EndDate"],
+                $data["Calendar"]["StartDate"],
+                $data["Calendar"]["EndDate"],
                 $object->PricingPeriod
             ));
 
@@ -107,7 +107,7 @@ class BookableProduct_Controller extends Product_Controller
 
             // If spaces are available, then we need to setup our shopping cart,
             // else  return with an error
-            if (!$resource || ($resource && $resource->isAvailable($data["StartDate"],$data["EndDate"],$data["Quantity"]))) {
+            if (!$resource || ($resource && $resource->isAvailable($data["Calendar"]["StartDate"],$data["Calendar"]["EndDate"],$data["Quantity"]))) {
                 if($object->TaxRateID && $object->TaxRate()->Amount) {
                     $tax_rate = $object->TaxRate()->Amount;
                 } else {
@@ -116,13 +116,13 @@ class BookableProduct_Controller extends Product_Controller
 
                 $customisations[] = array(
                     "Title" => _t("SimpleBookings.StartDate", "Start Date"),
-                    "Value" => $data["StartDate"],
+                    "Value" => $data["Calendar"]["StartDate"],
                     "Price" => 0
                 );
 
                 $customisations[] = array(
                     "Title" => _t("SimpleBookings.EndDate", "End Date"),
-                    "Value" => $data["EndDate"],
+                    "Value" => $data["Calendar"]["EndDate"],
                     "Price" => 0
                 );
 
