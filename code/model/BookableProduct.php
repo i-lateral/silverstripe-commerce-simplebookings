@@ -110,6 +110,20 @@ class BookableProduct extends Product
         );
     }
 
+    public function getPlacesRemaining($start, $end) 
+    {
+        $places = -1;
+
+        foreach ($this->Resources() as $resource) {
+            $r_places = $resource->PlacesRemaining($start, $end);
+            if ($places == -1 || $r_places < $places) {
+                $places = $r_places;
+            }
+        }
+
+        return $places;
+    }
+
     /**
      * Ensure that stockable settings are disabled on save.
      *

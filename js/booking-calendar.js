@@ -6,7 +6,7 @@ jQuery.noConflict();
         $start_date = new Date($start);
         $end_date = new Date($end);
         $end_date.setDate($end_date.getDate()+1);
-        $table = $('#Form_Form_Calendar');
+        $table = $('.calendarfield');
         $dates = $table.find('td');
         $valid = true;
         $dates.each(function() {
@@ -20,7 +20,7 @@ jQuery.noConflict();
     }
 
     function deselectAllDates($start = true) {
-        $table = $('#Form_Form_Calendar');
+        $table = $('.calendarfield');
         $start_field = $('input[data-calendar=StartDate]');
         $end_field = $('input[data-calendar=EndDate]');
         if ($start) {
@@ -39,7 +39,7 @@ jQuery.noConflict();
     
 	$(document).ready(function() {
         $(document).on('change','#Form_Form #Quantity_Holder #Quantity',function() {
-            $table = $('#Form_Form_Calendar');
+            $table = $('.calendarfield');
             $dates = $table.find('td');
             $qty = $(this).val();
 
