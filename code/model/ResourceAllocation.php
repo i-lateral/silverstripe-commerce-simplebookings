@@ -3,6 +3,7 @@
 class ResourceAllocation extends DataObject
 {
     private static $db = array(
+        'Title' => 'Varchar',
         'Start' => 'SS_DateTime',
         'End'   => 'SS_DateTime',
         'AllocateAll' => 'Boolean'   
@@ -19,6 +20,35 @@ class ResourceAllocation extends DataObject
         ]
     );
 
+    private static $summary_fields = [
+        'FullTitle' => 'Title',
+        'ResourcesList' => 'Resources',
+        'AllocateAll' => 'Allocated All'
+    ];
+
+    private static $casting = [
+        'FullTitle' => 'Varchar(255)',
+        'ResourcesList' => 'Varchar(255)'
+    ];
+
+    public function getFullTitle() 
+    {
+        if ($this->Title) {
+            return $this->Title;
+        }
+        return $this->Start . ' - ' . $this->End;
+    }
+
+    public function getResourcesList() 
+    {
+        $list = [];
+
+        foreach ($this->Resources() as $resource) {
+            $list[] = $resource->Title;
+        }
+
+        return implode(', ',$list);
+    }
 
     public function getCMSFields()
     {

@@ -112,13 +112,23 @@ class BookableProduct extends Product
 
     public function getPlacesRemaining($start, $end) 
     {
-        $places = -1;
+        $places = $this->AvailablePlaces;
 
-        foreach ($this->Resources() as $resource) {
-            $r_places = $resource->PlacesRemaining($start, $end);
-            if ($places == -1 || $r_places < $places) {
-                $places = $r_places;
+        if ($this->Resources()->Count() > 0) {
+            $places = -1;
+
+            foreach ($this->Resources() as $resource) {
+                $r_places = $resource->PlacesRemaining($start, $end);
+                if ($places == -1 || $r_places < $places) {
+                    $places = $r_places;
+                }
             }
+
+            if ($places == -1) {
+                $places = 0;
+            }
+        } else {
+            $places = $places - $this->getBookedPlaces($start, $end);
         }
 
         return $places;
