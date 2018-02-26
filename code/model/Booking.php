@@ -47,7 +47,7 @@ class Booking extends DataObject implements PermissionProvider
     /**
      * Link to view this item in the CMS
      *
-     * @return String
+     * @return string
      */
     public function CMSViewLink()
     {
@@ -68,21 +68,26 @@ class Booking extends DataObject implements PermissionProvider
     /**
      * Link to view this item's order in the CMS
      *
-     * @return String
+     * @return string
      */
     public function CMSOrderLink()
     {
-        return Controller::join_links(
-            "admin",
-            OrderAdmin::config()->url_segment,
-            "Order",
-            "EditForm",
-            "field",
-            "Order",
-            "item",
-            $this->OrderID,
-            "view"
-        );
+        if ($this->Order()->exists()) {
+            $order = $this->Order();
+            return Controller::join_links(
+                "admin",
+                OrderAdmin::config()->url_segment,
+                $order->ClassName,
+                "EditForm",
+                "field",
+                $order->ClassName,
+                "item",
+                $order->ID,
+                "view"
+            );
+        }
+
+        return "";
     }
 
     public function getProducts()
