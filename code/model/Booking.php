@@ -213,10 +213,9 @@ class Booking extends DataObject implements PermissionProvider
             $editable_cols = new GridFieldEditableColumns();
             $editable_cols
                 ->setDisplayFields(array(
-                    'Title' => array(
-                        'field' => 'ReadonlyField',
-                        'title' => _t("SimpleBookings.Title", "Title")
-                    ),
+                    'ProductID' => function($record, $column, $grid) {
+                        return DropdownField::create($column,'Product',BookableProduct::get()->Map('ID','Title'));
+                    },
                     'BookedQTY' => array(
                         'field' => 'TextField',
                         'title' => _t("SimpleBookings.NumbertoBook", "Number to Book")
@@ -243,16 +242,17 @@ class Booking extends DataObject implements PermissionProvider
 				)
 			);
 
-
         	$config
                 ->removeComponentsByType("GridFieldAddNewButton")
                 ->removeComponentsByType("GridFieldDeleteAction")
                 ->removeComponentsByType("GridFieldEditButton")
                 ->removeComponentsByType("GridFieldDetailForm")
                 ->removeComponentsByType("GridFieldDataColumns")
+                ->removeComponentsByType("GridFieldRelationSearch")
                 ->addComponent($editable_cols)
                 ->addComponent(new GridFieldDeleteAction(true))
-                ->addComponent(new GridFieldRecordHighlighter($alerts));
+                ->addComponent(new GridFieldRecordHighlighter($alerts))
+                ->addComponent(new GridFieldAddNewInlineButton());
             
             $fields->removeByName("Resources");
             

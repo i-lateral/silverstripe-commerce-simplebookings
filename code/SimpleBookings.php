@@ -171,9 +171,9 @@ class SimpleBookings extends ViewableData
                     $alloc_start_stamp = strtotime($allocation->Start);
                     $alloc_end_stamp = strtotime($allocation->End);
                     if (
-                        $prod_start_stamp >= $start_stamp && $prod_start_stamp <= $end_stamp ||
-                        $prod_start_stamp <= $start_stamp && $prod_end_stamp >= $end_stamp ||
-                        $prod_end_stamp >= $start_stamp && $prod_end_stamp <= $end_stamp
+                        $alloc_start_stamp >= $start_stamp && $alloc_start_stamp <= $end_stamp ||
+                        $alloc_start_stamp <= $start_stamp && $alloc_end_stamp >= $end_stamp ||
+                        $alloc_end_stamp >= $start_stamp && $alloc_end_stamp <= $end_stamp
                     ) {
                         $total_places += $product->Quantity;
                     }
