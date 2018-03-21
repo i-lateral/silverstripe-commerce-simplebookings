@@ -16,7 +16,8 @@ class ResourceAllocation extends DataObject
     private static $many_many_extraFields = array(
         'Resources' => [
             'Quantity' => 'Int',
-            'AllocateAll' => 'Boolean'
+            'AllocateAll' => 'Boolean',
+            'Increase' => 'Boolean'
         ]
     );
 
@@ -92,6 +93,10 @@ class ResourceAllocation extends DataObject
                     'AllocateAll' => array(
                         'field' => 'CheckBoxField',
                         'title' => _t("SimpleBookings.AllocateAll", "Allocate All")
+                    ),
+                    'Increase' => array(
+                        'field' => 'CheckBoxField',
+                        'title' => _t("SimpleBookings.Increase", "Increase availability")
                     )
                 ));
 

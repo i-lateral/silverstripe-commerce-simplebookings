@@ -131,6 +131,8 @@ class BookableProduct extends Product
             $places = $places - $this->getBookedPlaces($start, $end);
         }
 
+        $this->extend('updatePlacesRemaining', $start, $end, $places);
+
         return $places;
     }
 
