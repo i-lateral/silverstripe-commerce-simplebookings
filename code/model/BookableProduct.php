@@ -90,6 +90,8 @@ class BookableProduct extends Product
         $fields->removeByName("PackSize");
         $fields->removeByName("Weight"); 
 
+        $this->extend('updateCMSFields', $fields);
+
         return $fields;
     }
 
@@ -128,7 +130,7 @@ class BookableProduct extends Product
                 $places = 0;
             }
         } else {
-            $places = $places - $this->getBookedPlaces($start, $end);
+            $places -= $this->getBookedPlaces($start, $end);
         }
 
         $this->extend('updatePlacesRemaining', $start, $end, $places);

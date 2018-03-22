@@ -254,6 +254,7 @@ class Booking extends DataObject implements PermissionProvider
                 ->removeComponentsByType("GridFieldDetailForm")
                 ->removeComponentsByType("GridFieldDataColumns")
                 ->removeComponentsByType("GridFieldRelationSearch")
+                ->removeComponentsByType("GridFieldAddExistingAutocompleter")
                 ->addComponent($editable_cols)
                 ->addComponent(new GridFieldDeleteAction(true))
                 ->addComponent(new GridFieldRecordHighlighter($alerts))
