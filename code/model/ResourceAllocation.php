@@ -24,7 +24,9 @@ class ResourceAllocation extends DataObject
     private static $summary_fields = [
         'FullTitle' => 'Title',
         'ResourcesList' => 'Resources',
-        'AllocateAll' => 'Allocated All'
+        'AllocateAll' => 'Allocated All',
+        'Start' => 'Start',
+        'End' => 'End'
     ];
 
     private static $casting = [
