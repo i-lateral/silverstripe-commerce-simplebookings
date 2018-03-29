@@ -356,79 +356,83 @@ class Booking extends DataObject implements PermissionProvider
             $order = $this->Order();
         }
         
-        foreach ($this->getProducts() as $product) {
-            $total_time = count(SimpleBookings::create_date_range_array(
-                $product->Start,
-                $product->End,
-                $product->PricingPeriod
-            ));
-            $item = null;
+        foreach ($this->resources() as $resource) {
+            if ($resource->ProductID && $product = BookableProduct::get()->byID($resource->ProductID)) {
+                $total_time = count(SimpleBookings::create_date_range_array(
+                    $resource->Start,
+                    $resource->End,
+                    $product->PricingPeriod
+                ));
+                $item = null;
 
-            // Clean and reset any matched products
-            foreach ($order->Items() as $order_item) {
-                $stock_item = $order_item->FindStockItem();
+                // Clean and reset any matched products
+                foreach ($order->Items() as $order_item) {
+                    $stock_item = $order_item->FindStockItem();
 
-                if ($stock_item && $stock_item->ID == $product->ID) {
-                    $item = $order_item;
+                    if ($stock_item && $stock_item->ID == $product->ID) {
+                        $item = $order_item;
 
-                    $items_to_remove = [
-                        _t("SimpleBookings.StartDate", "Start Date"),
-                        _t("SimpleBookings.EndDate", "End Date"),
-                        _t("SimpleBookings.LengthOfTime", "Length of Time")
-                    ];
+                        $items_to_remove = [
+                            _t("SimpleBookings.StartDate", "Start Date"),
+                            _t("SimpleBookings.EndDate", "End Date"),
+                            _t("SimpleBookings.LengthOfTime", "Length of Time")
+                        ];
 
-                    foreach ($order_item->Customisations() as $customisation) {
-                        if (in_array($customisation->Title, $items_to_remove)) {
-                            $customisation->delete();
+                        foreach ($order_item->Customisations() as $customisation) {
+                            if (in_array($customisation->Title, $items_to_remove)) {
+                                $customisation->delete();
+                            }
                         }
                     }
                 }
-            }
 
-            // If we haven't found an existing order item, create a new one
-            if (!$item) {
-                $item = OrderItem::create(array(
-                    "Key" => $product->ID,
-                    "Title" => $product->Title,
-                    "Quantity" => $product->BookedQTY,
-                    "Price" => $product->Price,
-                    "TaxRate" => $product->TaxPercent,
-                    "StockID" => $product->StockID,
-                    "ProductClass" => $product->ClassName,
-                    "Stocked" => false,
-                    "Deliverable" => false
+                // If we haven't found an existing order item, create a new one
+                if (!$item) {
+                    $item = OrderItem::create(array(
+                        "Key" => $product->ID,
+                        "Title" => $product->Title,
+                        "Quantity" => $resource->BookedQTY,
+                        "Price" => $product->Price,
+                        "TaxRate" => $product->TaxPercent,
+                        "StockID" => $product->StockID,
+                        "ProductClass" => $product->ClassName,
+                        "Stocked" => false,
+                        "Deliverable" => false
+                    ));
+                    $item->ParentID = $order->ID;
+                } else {
+                    $item->Quantity = $resource->BookedQTY;
+                }
+                $item->write();
+
+                // Setup customisation on an order item
+                $customisation = OrderItemCustomisation::create(array(
+                    "Title" => _t("SimpleBookings.StartDate", "Start Date"),
+                    "Value" => $product->Start,
+                    "Price" => 0
                 ));
-                $item->ParentID = $order->ID;
-            } else {
-                $item->Quantity = $product->BookedQTY;
+                $customisation->write();
+                $item->Customisations()->add($customisation);
+
+                $customisation = OrderItemCustomisation::create(array(
+                    "Title" => _t("SimpleBookings.EndDate", "End Date"),
+                    "Value" => $product->End,
+                    "Price" => 0
+                ));
+                $customisation->write();
+                $item->Customisations()->add($customisation);
+
+                $customisation = OrderItemCustomisation::create(array(
+                    "Title" => _t("SimpleBookings.LengthOfTime", "Length of Time"),
+                    "Value" => $total_time,
+                    "Price" => ($product->Price * $total_time) - $product->Price
+                ));
+                $customisation->write();
+                $item->Customisations()->add($customisation);
             }
-            $item->write();
-
-            // Setup customisation on an order item
-            $customisation = OrderItemCustomisation::create(array(
-                "Title" => _t("SimpleBookings.StartDate", "Start Date"),
-                "Value" => $product->Start,
-                "Price" => 0
-            ));
-            $customisation->write();
-            $item->Customisations()->add($customisation);
-
-            $customisation = OrderItemCustomisation::create(array(
-                "Title" => _t("SimpleBookings.EndDate", "End Date"),
-                "Value" => $product->End,
-                "Price" => 0
-            ));
-            $customisation->write();
-            $item->Customisations()->add($customisation);
-
-            $customisation = OrderItemCustomisation::create(array(
-                "Title" => _t("SimpleBookings.LengthOfTime", "Length of Time"),
-                "Value" => $total_time,
-                "Price" => ($product->Price * $total_time) - $product->Price
-            ));
-            $customisation->write();
-            $item->Customisations()->add($customisation);
         }
+
+        $order->write();
 
         if ($this->CustomerID != $order->CustomerID) {
             $this->CustomerID = $order->CustomerID;
