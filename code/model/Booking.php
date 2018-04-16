@@ -587,10 +587,16 @@ class Booking extends DataObject implements PermissionProvider
     /**
      * Perform post delete functions
      *
+     * @return void
      */
     public function onAfterDelete()
     {
         parent::onAfterDelete();
+
+        // Clean up bookings on delete
+        foreach ($this->Resources() as $resource) {
+            $resource->delete();
+        }
 
         // Ensure that the booking clears up after itself
         if ($this->OrderID) {
