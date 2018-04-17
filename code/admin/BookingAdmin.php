@@ -34,9 +34,9 @@ class BookingAdmin extends ModelAdmin
     public $showImportForm = array('Booking');
 
     /**
-	 * @return Form
-	 */
-	public function SearchForm()
+     * @return Form
+     */
+    public function SearchForm()
     {
         $form = parent::SearchForm();
         $fields = $form->Fields();
@@ -64,10 +64,10 @@ class BookingAdmin extends ModelAdmin
             $end_field->setValue($query["EndDate"]);
         }
 
-		$this->extend('updateSearchForm', $form);
+        $this->extend('updateSearchForm', $form);
 
-		return $form;
-	}
+        return $form;
+    }
 
     public function getEditForm($id = null, $fields = null)
     {
@@ -79,16 +79,16 @@ class BookingAdmin extends ModelAdmin
         // Alterations for Hiarachy on product cataloge
         if ($this->modelClass == 'Booking') {
             $alerts = array(
-				'OverBooked' => array(
-					'comparator' => 'equal',
-					'patterns' => array(
-						'1' => array(
-							'status' => 'alert',
-							'message' => _t("SimpleBookings.OverBookedResource", 'This has an Over Booked resource'),
-						),
-					)
-				)
-			);
+            'OverBooked' => array(
+            'comparator' => 'equal',
+            'patterns' => array(
+            '1' => array(
+            'status' => 'alert',
+            'message' => _t("SimpleBookings.OverBookedResource", 'This has an Over Booked resource'),
+            ),
+            )
+            )
+            );
 
             $config
                 ->removeComponentsByType("GridFieldDetailForm")
@@ -134,10 +134,12 @@ class BookingAdmin extends ModelAdmin
                             ->exclude("End:LessThan", $start_date->format("Y-m-d H:i:s"))
                             ->exclude("Start:GreaterThan", $end_date->format("Y-m-d H:i:s"));
                     } else {
-                        $list = $list->filter(array(
+                        $list = $list->filter(
+                            array(
                             "Start:GreaterThanOrEqual" => $start_date->format("Y-m-d H:i:s"),
                             "End:LessThanOrEqual" => $end_date->format("Y-m-d H:i:s")
-                        ));
+                            )
+                        );
                     }
                 }
             }

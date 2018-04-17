@@ -36,7 +36,7 @@ class Booking extends DataObject implements PermissionProvider
     /**
      * Default sord order of records from the DB
      *
-     * @var array
+     * @var    array
      * @config
      */
     private static $default_sort = array(
@@ -217,9 +217,10 @@ class Booking extends DataObject implements PermissionProvider
 
             $editable_cols = new GridFieldEditableColumns();
             $editable_cols
-                ->setDisplayFields(array(
-                    'ProductID' => function($record, $column, $grid) {
-                        return DropdownField::create($column,'Product',BookableProduct::get()->Map('ID','Title'));
+                ->setDisplayFields(
+                    array(
+                    'ProductID' => function ($record, $column, $grid) {
+                        return DropdownField::create($column, 'Product', BookableProduct::get()->Map('ID', 'Title'));
                     },
                     'BookedQTY' => array(
                         'field' => 'TextField',
@@ -233,21 +234,22 @@ class Booking extends DataObject implements PermissionProvider
                         'field' => 'DateTimeField',
                         'title' => _t("SimpleBookings.EndDateTime", "End Date/Time")
                     )
-                ));
+                    )
+                );
             
             $alerts = array(
-				'PlacesRemaining' => array(
-					'comparator' => 'less',
-					'patterns' => array(
-						'0' => array(
-							'status' => 'alert',
-							'message' => _t("SimpleBookings.OverBooked", 'This resource is Over Booked'),
-						),
-					)
-				)
-			);
+            'PlacesRemaining' => array(
+            'comparator' => 'less',
+            'patterns' => array(
+            '0' => array(
+            'status' => 'alert',
+            'message' => _t("SimpleBookings.OverBooked", 'This resource is Over Booked'),
+            ),
+            )
+            )
+            );
 
-        	$config
+            $config
                 ->removeComponentsByType("GridFieldAddNewButton")
                 ->removeComponentsByType("GridFieldDeleteAction")
                 ->removeComponentsByType("GridFieldEditButton")
@@ -279,7 +281,7 @@ class Booking extends DataObject implements PermissionProvider
                 HasOnePickerField::create(
                     $this,
                     'CustomerID',
-                    _t("SimpleBookings.CustomerInfo",'Customer Info'),
+                    _t("SimpleBookings.CustomerInfo", 'Customer Info'),
                     $this->Customer(),
                     _t("SimpleBookings.SelectExistingCustomer", 'Select Existing Customer')
                 )->enableCreate(_t("SimpleBookings.AddNewCustomer", 'Add New Customer'))
@@ -324,7 +326,7 @@ class Booking extends DataObject implements PermissionProvider
      * Return a member object, based on eith the passed param or
      * getting the currently logged in Member.
      * 
-     * @param $member Either a Member object or an Int
+     * @param  $member Either a Member object or an Int
      * @return Member | Null
      */
     protected function getMember($member = null)
@@ -358,11 +360,13 @@ class Booking extends DataObject implements PermissionProvider
         
         foreach ($this->resources() as $resource) {
             if ($resource->ProductID && $product = BookableProduct::get()->byID($resource->ProductID)) {
-                $total_time = count(SimpleBookings::create_date_range_array(
-                    $resource->Start,
-                    $resource->End,
-                    $product->PricingPeriod
-                ));
+                $total_time = count(
+                    SimpleBookings::create_date_range_array(
+                        $resource->Start,
+                        $resource->End,
+                        $product->PricingPeriod
+                    )
+                );
                 $item = null;
 
                 // Clean and reset any matched products
@@ -388,7 +392,8 @@ class Booking extends DataObject implements PermissionProvider
 
                 // If we haven't found an existing order item, create a new one
                 if (!$item) {
-                    $item = OrderItem::create(array(
+                    $item = OrderItem::create(
+                        array(
                         "Key" => $product->ID,
                         "Title" => $product->Title,
                         "Quantity" => $resource->BookedQTY,
@@ -398,7 +403,8 @@ class Booking extends DataObject implements PermissionProvider
                         "ProductClass" => $product->ClassName,
                         "Stocked" => false,
                         "Deliverable" => false
-                    ));
+                        )
+                    );
                     $item->ParentID = $order->ID;
                 } else {
                     $item->Quantity = $resource->BookedQTY;
@@ -406,27 +412,33 @@ class Booking extends DataObject implements PermissionProvider
                 $item->write();
 
                 // Setup customisation on an order item
-                $customisation = OrderItemCustomisation::create(array(
+                $customisation = OrderItemCustomisation::create(
+                    array(
                     "Title" => _t("SimpleBookings.StartDate", "Start Date"),
                     "Value" => $product->Start,
                     "Price" => 0
-                ));
+                    )
+                );
                 $customisation->write();
                 $item->Customisations()->add($customisation);
 
-                $customisation = OrderItemCustomisation::create(array(
+                $customisation = OrderItemCustomisation::create(
+                    array(
                     "Title" => _t("SimpleBookings.EndDate", "End Date"),
                     "Value" => $product->End,
                     "Price" => 0
-                ));
+                    )
+                );
                 $customisation->write();
                 $item->Customisations()->add($customisation);
 
-                $customisation = OrderItemCustomisation::create(array(
+                $customisation = OrderItemCustomisation::create(
+                    array(
                     "Title" => _t("SimpleBookings.LengthOfTime", "Length of Time"),
                     "Value" => $total_time,
                     "Price" => ($product->Price * $total_time) - $product->Price
-                ));
+                    )
+                );
                 $customisation->write();
                 $item->Customisations()->add($customisation);
             }

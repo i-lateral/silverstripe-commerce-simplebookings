@@ -17,11 +17,11 @@ class BookableProduct_Controller extends Product_Controller
         $fields->push(
             HeaderField::create(
                 "BookHeading",
-                _t("SimpleBookings.BookNow","Book Now"),
+                _t("SimpleBookings.BookNow", "Book Now"),
                 2
             )
         );
-        $calendar = BookingCalendarField::create("Calendar","Calendar",null,$object);
+        $calendar = BookingCalendarField::create("Calendar", "Calendar", null, $object);
         $calendar->setForm($form);
 
         $fields->push($calendar);
@@ -93,11 +93,13 @@ class BookableProduct_Controller extends Product_Controller
                 return $this->redirectBack();
             }
 
-            $total_time = count(SimpleBookings::create_date_range_array(
-                $data["Calendar"]["StartDate"],
-                $data["Calendar"]["EndDate"],
-                $object->PricingPeriod
-            ));
+            $total_time = count(
+                SimpleBookings::create_date_range_array(
+                    $data["Calendar"]["StartDate"],
+                    $data["Calendar"]["EndDate"],
+                    $object->PricingPeriod
+                )
+            );
 
             if ($resources = $object->Resources()) {
                 $resource = $resources->First();
@@ -107,7 +109,7 @@ class BookableProduct_Controller extends Product_Controller
 
             // If spaces are available, then we need to setup our shopping cart,
             // else  return with an error
-            if (!$resource || ($resource && $resource->isAvailable($data["Calendar"]["StartDate"],$data["Calendar"]["EndDate"],$data["Quantity"]))) {
+            if (!$resource || ($resource && $resource->isAvailable($data["Calendar"]["StartDate"], $data["Calendar"]["EndDate"], $data["Quantity"]))) {
                 if($object->TaxRateID && $object->TaxRate()->Amount) {
                     $tax_rate = $object->TaxRate()->Amount;
                 } else {

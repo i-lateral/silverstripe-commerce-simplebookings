@@ -1,6 +1,6 @@
 <?php
 
-class BookingCalendarField extends CalendarField 
+class BookingCalendarField extends CalendarField
 {
     protected $product;
 
@@ -30,16 +30,17 @@ class BookingCalendarField extends CalendarField
     }
 
     /**
-	 * Create a new file field.
-	 *
-	 * @param string $name The internal field name, passed to forms.
-	 * @param string $title The field label.
-	 * @param int $value The value of the field.
-	 */
-	public function __construct($name, $title = null, $value = null,$product) {
+     * Create a new file field.
+     *
+     * @param string $name  The internal field name, passed to forms.
+     * @param string $title The field label.
+     * @param int    $value The value of the field.
+     */
+    public function __construct($name, $title = null, $value = null,$product) 
+    {
         $this->product = $product;
         
-		parent::__construct($name, $title, $value);
+        parent::__construct($name, $title, $value);
     }
 
     public function getCalendarDays($month,$year)
@@ -47,7 +48,7 @@ class BookingCalendarField extends CalendarField
         $today = new Date();
         $today->setValue(date("Y-m-d H:i:s"));
         /* days in month */
-        $days = parent::getCalendarDays($month,$year);
+        $days = parent::getCalendarDays($month, $year);
 
         $product = $this->getProduct();
 
@@ -59,9 +60,8 @@ class BookingCalendarField extends CalendarField
                 $end->setValue($day->Date->format("Y-m-d 23:59:59"));
 
                 $spaces = $product->getPlacesRemaining($start->format("Y-m-d H:i:s"), $end->format("Y-m-d H:i:s"));
-                if (
-                    ($spaces > 0 && $day->Date->format("Y-m-d H:i:s") > $today->format("Y-m-d H:i:s")) 
-                    && !in_array($day->Date->format("Y-m-d"),$this->disabled_dates)
+                if (($spaces > 0 && $day->Date->format("Y-m-d H:i:s") > $today->format("Y-m-d H:i:s")) 
+                    && !in_array($day->Date->format("Y-m-d"), $this->disabled_dates)
                 ) {
                     $day->Availability = 'available';
                     $day->Spaces = $spaces;

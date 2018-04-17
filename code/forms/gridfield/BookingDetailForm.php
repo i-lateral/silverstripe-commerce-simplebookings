@@ -30,9 +30,9 @@ class BookingDetailForm_ItemRequest extends GridFieldDetailForm_ItemRequest
         $form = parent::ItemEditForm();
         $form->addExtraClass("cms-booking-form");
 
-		if ($form && $this->record->ID !== 0 && $this->record->canEdit()) {
-			$fields = $form->Fields();
-			$actions = $form->Actions();
+        if ($form && $this->record->ID !== 0 && $this->record->canEdit()) {
+            $fields = $form->Fields();
+            $actions = $form->Actions();
 
             // Add a button to view this items order (if available)
             if ($this->record->Order()->exists()) {
@@ -53,32 +53,33 @@ class BookingDetailForm_ItemRequest extends GridFieldDetailForm_ItemRequest
                 );
             }
 
-            // Add right aligned total field
-            $total = $this->record->obj("TotalCost");
-            $total_html = '<span class="cms-booking-total ui-corner-all ui-button-text-only">';
-            $total_html .= "<strong>Total:</strong> {$total->Nice()}";
-            $total_html .= '</span>';
+                  // Add right aligned total field
+                  $total = $this->record->obj("TotalCost");
+                  $total_html = '<span class="cms-booking-total ui-corner-all ui-button-text-only">';
+                  $total_html .= "<strong>Total:</strong> {$total->Nice()}";
+                  $total_html .= '</span>';
 
-            $actions->push(LiteralField::create(
-                "TotalCost",
-                $total_html
-            ));
+                $actions->push(
+                    LiteralField::create(
+                        "TotalCost",
+                        $total_html
+                    )
+                );
 
         }
         
-		$this->extend("updateItemEditForm", $form);
+        $this->extend("updateItemEditForm", $form);
         
         return $form;
     }
 
     /**
      * Redirect to this record's associated order in the CMS
-     *
      */
     public function doCreateOrder($data, $form)
     {
         $record = $this->record;
-		$controller = $this->getToplevelController();
+        $controller = $this->getToplevelController();
 
         if ($record->CustomerID) {
             $data = array(
@@ -104,29 +105,43 @@ class BookingDetailForm_ItemRequest extends GridFieldDetailForm_ItemRequest
 
             // Loop through each booking item and add that to the order
             foreach($record->getProducts() as $product) {
-                $total_time = count(SimpleBookings::create_date_range_array(
-                    $record->Start,
-                    $record->End,
-                    $record->PricingPeriod
-                ));
+                $total_time = count(
+                    SimpleBookings::create_date_range_array(
+                        $record->Start,
+                        $record->End,
+                        $record->PricingPeriod
+                    )
+                );
 
                 $customisations = ArrayList::create();
 
                 // Setup customisations
-                $customisations->add(ArrayData::create(array(
-                    "Title" => _t("SimpleBookings.StartDate", "Start Date"),
-                    "Value" => $record->Start
-                )));
+                $customisations->add(
+                    ArrayData::create(
+                        array(
+                        "Title" => _t("SimpleBookings.StartDate", "Start Date"),
+                        "Value" => $record->Start
+                        )
+                    )
+                );
 
-                $customisations->add(ArrayData::create(array(
-                    "Title" => _t("SimpleBookings.EndDate", "End Date"),
-                    "Value" => $record->End
-                )));
+                $customisations->add(
+                    ArrayData::create(
+                        array(
+                        "Title" => _t("SimpleBookings.EndDate", "End Date"),
+                        "Value" => $record->End
+                        )
+                    )
+                );
 
-                $customisations->add(ArrayData::create(array(
-                    "Title" => _t("SimpleBookings.LengthOfTime", "Length of Time"),
-                    "Value" => $total_time
-                )));
+                $customisations->add(
+                    ArrayData::create(
+                        array(
+                        "Title" => _t("SimpleBookings.LengthOfTime", "Length of Time"),
+                        "Value" => $total_time
+                        )
+                    )
+                );
                 
                 $order_item = new OrderItem();
                 $order_item->Title          = $product->Title;
@@ -165,26 +180,25 @@ class BookingDetailForm_ItemRequest extends GridFieldDetailForm_ItemRequest
         }
 
         if($this->gridField->getList()->byId($this->record->ID)) {
-			// Return new view, as we can't do a "virtual redirect" via the CMS Ajax
-			// to the same URL (it assumes that its content is already current, and doesn't reload)
-			return $this->edit($controller->getRequest());
-		} else {
-			// Changes to the record properties might've excluded the record from
-			// a filtered list, so return back to the main view if it can't be found
-			$noActionURL = $controller->removeAction($data['url']);
-			$controller->getRequest()->addHeader('X-Pjax', 'Content');
-			return $controller->redirect($noActionURL, 302);
-		}
+            // Return new view, as we can't do a "virtual redirect" via the CMS Ajax
+            // to the same URL (it assumes that its content is already current, and doesn't reload)
+            return $this->edit($controller->getRequest());
+        } else {
+            // Changes to the record properties might've excluded the record from
+            // a filtered list, so return back to the main view if it can't be found
+            $noActionURL = $controller->removeAction($data['url']);
+            $controller->getRequest()->addHeader('X-Pjax', 'Content');
+            return $controller->redirect($noActionURL, 302);
+        }
     }
 
     /**
      * Redirect to this record's associated order in the CMS
-     *
      */
     public function doViewOrder($data, $form)
     {
         $record = $this->record;
-		$controller = $this->getToplevelController();
+        $controller = $this->getToplevelController();
         
         return $controller->redirect($record->CMSOrderLink());
     }

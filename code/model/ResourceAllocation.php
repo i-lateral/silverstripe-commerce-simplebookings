@@ -50,7 +50,7 @@ class ResourceAllocation extends DataObject
             $list[] = $resource->Title;
         }
 
-        return implode(', ',$list);
+        return implode(', ', $list);
     }
 
     public function getCMSFields()
@@ -79,7 +79,8 @@ class ResourceAllocation extends DataObject
 
             $editable_cols = new GridFieldEditableColumns();
             $editable_cols
-                ->setDisplayFields(array(
+                ->setDisplayFields(
+                    array(
                     'Title' => array(
                         'field' => 'ReadonlyField',
                         'title' => _t("SimpleBookings.Title", "Title")
@@ -100,7 +101,8 @@ class ResourceAllocation extends DataObject
                         'field' => 'CheckBoxField',
                         'title' => _t("SimpleBookings.Increase", "Increase availability")
                     )
-                ));
+                    )
+                );
 
 
             $config

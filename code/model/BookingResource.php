@@ -18,8 +18,8 @@ class BookingResource extends DataObject
      * Get the number of booked places this product has between the
      * start and end times.
      *
-     * @param string $start Start date and time (preferably in standard DB format)
-     * @param string $end End date and time (preferably in standard DB format)
+     * @param  string $start Start date and time (preferably in standard DB format)
+     * @param  string $end   End date and time (preferably in standard DB format)
      * @return Int
      */
     public function getBookedPlaces($start, $end)
@@ -36,9 +36,9 @@ class BookingResource extends DataObject
      * this by finding how many places are currently booked in this
      * location 
      *
-     * @param string $start Start date and time (preferably in standard DB format)
-     * @param string $end Start date and time (preferably in standard DB format)
-     * @param int $qty amount of places you want to book between the two dates
+     * @param  string $start Start date and time (preferably in standard DB format)
+     * @param  string $end   Start date and time (preferably in standard DB format)
+     * @param  int    $qty   amount of places you want to book between the two dates
      * @return boolean
      */
     public function isAvailable($start = null, $end = null, $qty = 0)
@@ -62,8 +62,8 @@ class BookingResource extends DataObject
      * How many places are remaining for this product? If this is
      * negative then the product is overbooked
      *
-     * @param string $start Start date and time (preferably in standard DB format)
-     * @param string $end Start date and time (preferably in standard DB format)
+     * @param  string $start Start date and time (preferably in standard DB format)
+     * @param  string $end   Start date and time (preferably in standard DB format)
      * @return boolean
      */
     public function PlacesRemaining($start = null, $end = null)

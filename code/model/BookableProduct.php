@@ -12,7 +12,7 @@ class BookableProduct extends Product
      * These periods are used to dertime how a product's#
      * price is calculted.
      * 
-     * @var array
+     * @var    array
      * @config
      */
     private static $price_periods = array(
@@ -27,7 +27,7 @@ class BookableProduct extends Product
      * 
      * By default this is set to a day.
      * 
-     * @var int
+     * @var    int
      * @config
      */
     private static $default_price_period = 86400;
@@ -67,20 +67,26 @@ class BookableProduct extends Product
             array(
                 DropdownField::create("PricingPeriod")
                     ->setSource($this->config()->price_periods)
-                    ->setRightTitle(_t(
-                        "SimpleBookings.PricingPeriodDescription",
-                        "What time interval is this price for"
-                    )),
+                    ->setRightTitle(
+                        _t(
+                            "SimpleBookings.PricingPeriodDescription",
+                            "What time interval is this price for"
+                        )
+                    ),
                 NumericField::create("AvailablePlaces")
-                    ->setRightTitle(_t(
-                        "SimpleBookings.AvailabilityDescription",
-                        "The availability of this product for a given day"
-                    )),
+                    ->setRightTitle(
+                        _t(
+                            "SimpleBookings.AvailabilityDescription",
+                            "The availability of this product for a given day"
+                        )
+                    ),
                 NumericField::create("MinimumPlaces")
-                    ->setRightTitle(_t(
-                        "SimpleBookings.MinimumPlacesDescription",
-                        "Does this require a minimum amount to book (use 0 to disable)?"
-                    ))
+                    ->setRightTitle(
+                        _t(
+                            "SimpleBookings.MinimumPlacesDescription",
+                            "Does this require a minimum amount to book (use 0 to disable)?"
+                        )
+                    )
             ),
             "StockLevel"
         );
@@ -99,8 +105,8 @@ class BookableProduct extends Product
      * Get the number of booked places this product has between the
      * start and end times.
      *
-     * @param string $start Start date and time (preferably in standard DB format)
-     * @param string $end End date and time (preferably in standard DB format)
+     * @param  string $start Start date and time (preferably in standard DB format)
+     * @param  string $end   End date and time (preferably in standard DB format)
      * @return Int
      */
     public function getBookedPlaces($start, $end)
@@ -140,7 +146,6 @@ class BookableProduct extends Product
 
     /**
      * Ensure that stockable settings are disabled on save.
-     *
      */
     public function onBeforeWrite()
     {

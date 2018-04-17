@@ -5,14 +5,15 @@
  * quantity is altered.
  *
  * @package SimpleBookings
- * @author ilateral (http://ilateralweb.co.uk)
+ * @author  ilateral (http://ilateralweb.co.uk)
  */
 class SimpleBookingShoppingCartExtension extends Extension
 {
     /**
      * Calculate the item price, based on any bulk discounts set
      */
-    public function onBeforeUpdate($item) {
+    public function onBeforeUpdate($item) 
+    {
         $id = $item->StockID;
         $classname = $item->ClassName;
         $object = null;
@@ -46,10 +47,12 @@ class SimpleBookingShoppingCartExtension extends Extension
                 $item->Quantity = $remaining;
 
                 // Throw an exception to inform the user there are not enough places
-                throw new Exception(_t(
-                    "SimpleBookings.NoSpacesAvailable",
-                    "There are not enough spaces available for this date"
-                ));
+                throw new Exception(
+                    _t(
+                        "SimpleBookings.NoSpacesAvailable",
+                        "There are not enough spaces available for this date"
+                    )
+                );
             }
         }
     }

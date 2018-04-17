@@ -15,7 +15,6 @@ class SimpleBookingOrderExtension extends DataExtension
 
     /**
      * Create a Booking when the order is marked as paid
-     *
      */
     public function onBeforeWrite()
     {   
@@ -42,10 +41,14 @@ class SimpleBookingOrderExtension extends DataExtension
                         }
                     }
 
-                    $products->add(ArrayData::create(array(
-                        "Product" => $product,
-                        "Quantity" => $item->Quantity
-                    )));
+                    $products->add(
+                        ArrayData::create(
+                            array(
+                            "Product" => $product,
+                            "Quantity" => $item->Quantity
+                            )
+                        )
+                    );
                 }
             }
 
