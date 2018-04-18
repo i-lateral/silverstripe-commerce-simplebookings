@@ -1,16 +1,8 @@
 <?php
 /**
- * Base class for editing a catlogue object.
- * 
- * Currently allows enabling or disabling of an object via additional buttons
- * added to the gridfield.
- * 
- * NOTE: The object being edited must implement a "Disabled" parameter
- * on it's DB fields.
  *
  * @author ilateral
  */
-
 class BookingDetailForm extends GridFieldDetailForm
 {
 }
@@ -22,7 +14,6 @@ class BookingDetailForm_ItemRequest extends GridFieldDetailForm_ItemRequest
         'edit',
         'view',
         'ItemEditForm',
-
     );
 
     public function ItemEditForm()

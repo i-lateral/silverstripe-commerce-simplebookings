@@ -13,7 +13,7 @@ class SimpleBookings extends ViewableData
      * Do BookableProducts lock the shopping cart (so
      * they cannot be edited)?
      *
-     * @var    Boolean
+     * @var    boolean
      * @config 
      */
     private static $lock_cart = true;
@@ -23,7 +23,7 @@ class SimpleBookings extends ViewableData
      * (for example tickets to be posted). By default this
      * module assumes no.
      *
-     * @var    Boolean
+     * @var    boolean
      * @config 
      */
     private static $allow_delivery = false;
@@ -35,9 +35,10 @@ class SimpleBookings extends ViewableData
      * Thanks to this stack overflow post:
      * http://stackoverflow.com/questions/4312439/php-return-all-dates-between-two-dates-in-an-array
      *
-     * @param  date_from The starting date
-     * @param  date_to The end date
-     * @param  interval a time period in seconds that will be used to make the array 
+     * @param string $date_from The starting date
+     * @param string $date_to   The end date
+     * @param int    $interval  Time period (seconds) to use to make the array
+     *
      * @return array
      */
     public static function create_date_range_array($date_from, $date_to, $interval)
@@ -59,11 +60,11 @@ class SimpleBookings extends ViewableData
     /**
      * Find the total spaces already booked between the two provided dates.
      *
-     * @param  date_from The starting date
-     * @param  date_to The end date
-     * @param  ID The ID of the product we are trying to book
-     * @return Int
-     * @return array
+     * @param string $date_from The starting date
+     * @param string $date_to   The end date
+     * @param int    $ID        The ID of the product we are trying to book
+     * 
+     * @return int
      */
     public static function get_total_booked_spaces($date_from, $date_to, $ID)
     {

@@ -1,5 +1,15 @@
 <?php
 
+/**
+ * Pre-allocate resources (for example over christmas) that will be accounted for
+ * when attempting to calculate bookings
+ *
+ * @category SilverstripeModule
+ * @package  SimpleBookings
+ * @author   ilateral <info@ilateral.co.uk>
+ * @license  https://spdx.org/licenses/BSD-3-Clause.html BSD-3-Clause
+ * @link     https://github.com/i-lateral/silverstripe-commerce-simplebookings
+ */
 class ResourceAllocation extends DataObject
 {
     private static $db = array(
@@ -34,6 +44,11 @@ class ResourceAllocation extends DataObject
         'ResourcesList' => 'Varchar(255)'
     ];
 
+    /**
+     * Return a more comprehensive title for this object
+     * 
+     * @return string
+     */
     public function getFullTitle() 
     {
         if ($this->Title) {
@@ -42,6 +57,11 @@ class ResourceAllocation extends DataObject
         return $this->Start . ' - ' . $this->End;
     }
 
+    /**
+     * Return a rendered list of resources contained in this booking
+     * 
+     * @return string
+     */
     public function getResourcesList() 
     {
         $list = [];
@@ -53,6 +73,11 @@ class ResourceAllocation extends DataObject
         return implode(', ', $list);
     }
 
+    /**
+     * {@inheritdoc}
+     * 
+     * @return FieldList
+     */
     public function getCMSFields()
     {
         $fields = parent::getCMSFields();
