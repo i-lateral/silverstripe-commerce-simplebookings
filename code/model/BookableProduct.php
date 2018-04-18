@@ -1,8 +1,18 @@
 <?php
 
+/**
+ * A product that can be booked by by adding it to the shopping cart and paying
+ *
+ * @category SilverstripeModule
+ * @package  SimpleBookings
+ * @author   ilateral <info@ilateral.co.uk>
+ * @license  https://spdx.org/licenses/BSD-3-Clause.html BSD-3-Clause
+ * @link     https://github.com/i-lateral/silverstripe-commerce-simplebookings
+ */
 class BookableProduct extends Product
 {
     /**
+     * @var    string
      * @config
      */
     private static $description = "A bookable product that can be added to a booking";
@@ -126,7 +136,7 @@ class BookableProduct extends Product
             $places = -1;
 
             foreach ($this->Resources() as $resource) {
-                $r_places = $resource->PlacesRemaining($start, $end);
+                $r_places = $resource->getPlacesRemaining($start, $end);
                 if ($places == -1 || $r_places < $places) {
                     $places = $r_places;
                 }

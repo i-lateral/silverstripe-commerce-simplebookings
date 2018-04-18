@@ -1,15 +1,26 @@
 <?php
 
+/**
+ * A single booking that can contain multiple "resources". Each resource is linked to
+ * a "BookableProduct" and has a start and end date.
+ * 
+ * @category SilverstripeModule
+ * @package  SimpleBookings
+ * @author   ilateral <info@ilateral.co.uk>
+ * @license  https://spdx.org/licenses/BSD-3-Clause.html BSD-3-Clause
+ * @link     https://github.com/i-lateral/silverstripe-commerce-simplebookings
+ */
 class Booking extends DataObject implements PermissionProvider
 {
     private static $db = array(
-        "Start" => "SS_Datetime",
-        "End"   => "SS_Datetime"
+        "Start"     => "SS_Datetime",
+        "End"       => "SS_Datetime",
+        "PartySize" => "Int"
     );
 
     private static $has_one = array(
-        "Order" => "Order",
-        "Customer" => "Member"
+        "Order"     => "Order",
+        "Customer"  => "Member"
     );
 
     private static $has_many = array(
@@ -41,7 +52,7 @@ class Booking extends DataObject implements PermissionProvider
      */
     private static $default_sort = array(
         "Start" => "DESC",
-        "End" => "DESC"
+        "End"   => "DESC"
     );
 
     /**
@@ -124,14 +135,14 @@ class Booking extends DataObject implements PermissionProvider
     /**
      * Determine if any of these products are overbooked
      *
-     * @return Boolean
+     * @return boolean
      */
     public function getOverBooked()
     {
         $overbooked = false;
 
         foreach ($this->Resources() as $product) {
-            if ($product->PlacesRemaining($product->Start, $product->End) < 0) {
+            if ($product->getPlacesRemaining($product->Start, $product->End) < 0) {
                 $overbooked = true;
             }
         }
@@ -143,7 +154,7 @@ class Booking extends DataObject implements PermissionProvider
      * Get the total cost of this booking, based on all products added
      * and the total number of days
      *
-     * @return Float
+     * @return float
      */
     public function getTotalCost()
     {
@@ -159,7 +170,7 @@ class Booking extends DataObject implements PermissionProvider
     /**
      * Link to edit this item in the CMS
      *
-     * @return String
+     * @return string
      */
     public function CMSEditLink()
     {
@@ -176,120 +187,108 @@ class Booking extends DataObject implements PermissionProvider
         );
     }
 
+    /**
+     * {@inheritdoc}
+     * 
+     * @return FieldList
+     */
     public function getCMSFields()
     {
-        $fields = parent::getCMSFields();
+        $self = $this;
+        $this->beforeUpdateCMSFields(
+            function ($fields) use ($self) {
+                $fields->removeByName("End");
+                
+                // Hide Order Field
+                $fields->replaceField(
+                    "OrderID",
+                    HiddenField::create("OrderID")
+                );
 
-        // Hide Order Field
-        $fields->replaceField(
-            "OrderID",
-            HiddenField::create("OrderID")
-        );
+                // Setup calendars on date fields
+                $start_field = $fields->dataFieldByName("Start");
 
-        // Setup calendars on date fields
-        $start_field = $fields->dataFieldByName("Start");
-        $end_field = $fields->dataFieldByName("End");
+                if ($start_field) {
+                    $fields->addFieldToTab(
+                        'Root.Main',
+                        HeaderField::create(
+                            "DatesHeader",
+                            _t("SimpleBookings.SelectStartDate", "Select a Start Date")
+                        ),
+                        'Start'
+                    );
 
-        if ($start_field && $end_field) {
-            $fields->addFieldToTab(
-                'Root.Main',
-                HeaderField::create(
-                    "DatesHeader",
-                    _t("SimpleBookings.SelectStartEndDate", "Select a Start and End Date")
-                ),
-                'Start'
-            );
+                    $start_field
+                        ->getDateField()
+                        ->setConfig("showcalendar", true);
+                }
 
-            $start_field
-                ->getDateField()
-                ->setConfig("showcalendar", true);
+                // Add editable fields to manage quantity
+                $resources_field = $fields->dataFieldByName("Resources");
 
-            $end_field
-                ->getDateField()
-                ->setConfig("showcalendar", true);
-        }
+                if ($resources_field) {
+                    $config = $resources_field->getConfig();
+                    
+                    $alerts = array(
+                        'PlacesRemaining' => array(
+                            'comparator' => 'less',
+                            'patterns' => array(
+                                '0' => array(
+                                    'status' => 'alert',
+                                    'message' => _t(
+                                        "SimpleBookings.OverBooked",
+                                        'This resource is Over Booked'
+                                    ),
+                                ),
+                            )
+                        )
+                    );
 
-        // Add editable fields to manage quantity
-        $resources_field = $fields->dataFieldByName("Resources");
+                    $config
+                        ->removeComponentsByType("GridFieldDeleteAction")
+                        ->removeComponentsByType("GridFieldRelationSearch")
+                        ->removeComponentsByType("GridFieldAddExistingAutocompleter")
+                        ->addComponent(new GridFieldDeleteAction(true))
+                        ->addComponent(new GridFieldRecordHighlighter($alerts));
+                    
+                    $edit_form = $config->getComponentByType("GridFieldDetailForm");
 
-        if ($resources_field) {
-            $config = $resources_field->getConfig();
+                    if (isset($edit_form)) {
+                        $edit_form->setItemRequestClass(
+                            BookingResourceDetailForm_ItemRequest::class
+                        );
+                    }
+                    
+                    $fields->removeByName("Resources");
+                    
+                    $fields->addFieldToTab(
+                        "Root.Main",
+                        $resources_field
+                    );
+                }
 
-            $editable_cols = new GridFieldEditableColumns();
-            $editable_cols
-                ->setDisplayFields(
+                // Add has one picker field.
+                $fields->addFieldsToTab(
+                    'Root.Customer',
                     array(
-                    'ProductID' => function ($record, $column, $grid) {
-                        return DropdownField::create($column, 'Product', BookableProduct::get()->Map('ID', 'Title'));
-                    },
-                    'BookedQTY' => array(
-                        'field' => 'TextField',
-                        'title' => _t("SimpleBookings.NumbertoBook", "Number to Book")
-                    ),
-                    'Start' => array(
-                        'field' => 'DateTimeField',
-                        'title' => _t("SimpleBookings.StartDateTime", "Start Date/Time")
-                    ),
-                    'End' => array(
-                        'field' => 'DateTimeField',
-                        'title' => _t("SimpleBookings.EndDateTime", "End Date/Time")
-                    )
+                        HeaderField::create(
+                            "CustomerHeader",
+                            _t("SimpleBookings.CustomerDetails", "Customer Details")
+                        ),
+                        HasOnePickerField::create(
+                            $self,
+                            'CustomerID',
+                            _t("SimpleBookings.CustomerInfo", 'Customer Info'),
+                            $self->Customer(),
+                            _t("SimpleBookings.SelectExistingCustomer", 'Select Existing Customer')
+                        )->enableCreate(_t("SimpleBookings.AddNewCustomer", 'Add New Customer'))
+                        ->enableEdit()
                     )
                 );
-            
-            $alerts = array(
-            'PlacesRemaining' => array(
-            'comparator' => 'less',
-            'patterns' => array(
-            '0' => array(
-            'status' => 'alert',
-            'message' => _t("SimpleBookings.OverBooked", 'This resource is Over Booked'),
-            ),
-            )
-            )
-            );
-
-            $config
-                ->removeComponentsByType("GridFieldAddNewButton")
-                ->removeComponentsByType("GridFieldDeleteAction")
-                ->removeComponentsByType("GridFieldEditButton")
-                ->removeComponentsByType("GridFieldDetailForm")
-                ->removeComponentsByType("GridFieldDataColumns")
-                ->removeComponentsByType("GridFieldRelationSearch")
-                ->removeComponentsByType("GridFieldAddExistingAutocompleter")
-                ->addComponent($editable_cols)
-                ->addComponent(new GridFieldDeleteAction(true))
-                ->addComponent(new GridFieldRecordHighlighter($alerts))
-                ->addComponent(new GridFieldAddNewInlineButton());
-            
-            $fields->removeByName("Resources");
-            
-            $fields->addFieldToTab(
-                "Root.Main",
-                $resources_field
-            );
-        }
-
-        // Add has one picker field.
-        $fields->addFieldsToTab(
-            'Root.Customer',
-            array(
-                HeaderField::create(
-                    "CustomerHeader",
-                    _t("SimpleBookings.CustomerDetails", "Customer Details")
-                ),
-                HasOnePickerField::create(
-                    $this,
-                    'CustomerID',
-                    _t("SimpleBookings.CustomerInfo", 'Customer Info'),
-                    $this->Customer(),
-                    _t("SimpleBookings.SelectExistingCustomer", 'Select Existing Customer')
-                )->enableCreate(_t("SimpleBookings.AddNewCustomer", 'Add New Customer'))
-                ->enableEdit()
-            )
+            }
         );
-
-        return $fields;
+        
+        return parent::getCMSFields();
     }
 
     public function providePermissions()
