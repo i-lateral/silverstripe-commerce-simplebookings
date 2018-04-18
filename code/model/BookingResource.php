@@ -165,7 +165,8 @@ class BookingResource extends DataObject
     }
 
     /**
-     * Syncronise this resources booking (if available) on write
+     * Syncronise this resources booking (if available) on write and
+     * ensure the the correct end date is set for the booking
      * 
      * @return void
      */
@@ -174,9 +175,11 @@ class BookingResource extends DataObject
         parent::onAfterWrite();
 
         $booking = $this->Booking();
-
+        
         if (isset($booking)) {
+            $booking->updateEndDate();
             $booking->sync();
+            $booking->write();
         }
     }
 }

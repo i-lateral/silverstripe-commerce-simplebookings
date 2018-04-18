@@ -21,3 +21,7 @@ This file lists changes made to this module
 
 * Switch to using dedicated resources on bookings
 * Add ability to pre-allocate spaces of `BookableProduct`s
+
+## 0.5.0
+
+* Simplify how bookings work in admin slightly 

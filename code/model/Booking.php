@@ -188,6 +188,26 @@ class Booking extends DataObject implements PermissionProvider
     }
 
     /**
+     * Update the end date to be based on the latest end date
+     * 
+     * @return void
+     */
+    public function updateEndDate()
+    {
+        $end = new DateTime($this->End);
+
+        foreach ($this->Resources() as $resource) {
+            $new_end = new DateTime($resource->End);
+
+            if ($new_end > $end) {
+                $end = $new_end;
+            }
+        }
+
+        $this->End = $end->format("Y-m-d H:i:s");
+    }
+
+    /**
      * {@inheritdoc}
      * 
      * @return FieldList
@@ -581,6 +601,8 @@ class Booking extends DataObject implements PermissionProvider
 
             $this->Resources()->add($product);
         }
+
+        $this->updateEndDate();
     }
 
     /**
