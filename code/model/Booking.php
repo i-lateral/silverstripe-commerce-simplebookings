@@ -12,9 +12,28 @@
  */
 class Booking extends DataObject implements PermissionProvider
 {
+
+    /**
+     * DB/Casted fields that will be synced to/from an order on write.
+     * This is an array, where keys are the booking fields and values
+     * are the order fields 
+     * 
+     * @var array
+     */
+    private static $fields_to_sync = array(
+        "FirstName" => "FirstName",
+        "Surname" => "Surname",
+        "Email" => "Email",
+        "PhoneNumber" => "PhoneNumber"
+    );
+
     private static $db = array(
         "Start"     => "SS_Datetime",
         "End"       => "SS_Datetime",
+        "FirstName" => "Varchar(255)",
+        "Surname"   => "Varchar(255)",
+        "Email"     => "Varchar(255)",
+        "PhoneNumber"=> "Varchar(255)",
         "PartySize" => "Int"
     );
 
@@ -38,9 +57,9 @@ class Booking extends DataObject implements PermissionProvider
         "Start"             => "Start",
         "End"               => "End",
         "ProductsHTML"      => "Products",
-        "Customer.FirstName"=> "First Name",
-        "Customer.Surname"  => "Surname",
-        "Customer.Email"    => "Email",
+        "FirstName"         => "First Name",
+        "Surname"           => "Surname",
+        "Email"             => "Email",
         "Order.OrderNumber" => "Order"
     );
 
@@ -101,12 +120,19 @@ class Booking extends DataObject implements PermissionProvider
         return "";
     }
 
+    /**
+     * Get a list fo products for this booking
+     * 
+     * @return ArrayList
+     */
     public function getProducts()
     {
         $products = ArrayList::create();
 
         foreach ($this->Resources() as $resource) {
-            if ($resource->ProductID && $product = BookableProduct::get()->byID($resource->ProductID)) {
+            $product = BookableProduct::get()->byID($resource->ProductID);
+
+            if (isset($product)) {
                 $products->add($product);
             }
         }
@@ -114,13 +140,20 @@ class Booking extends DataObject implements PermissionProvider
         return $products;
     }
 
+    /**
+     * Get a list of products associated with this booking as a HTML UL>LI
+     * 
+     * @return HTMLText
+     */
     public function getProductsHTML()
     {
         $html = "<ul>";
 
         foreach ($this->Resources() as $resource) {
-            if ($resource->ProductID) {
-                $html .= "<li>{$resource->Product()->Title}: {$resource->BookedQTY}</li>";
+            $product = $resource->Product();
+
+            if ($product->exists()) {
+                $html .= "<li>{$product->Title}: {$resource->BookedQTY}</li>";
             }
         }
 
@@ -218,6 +251,7 @@ class Booking extends DataObject implements PermissionProvider
         $this->beforeUpdateCMSFields(
             function ($fields) use ($self) {
                 $fields->removeByName("End");
+                $fields->removeByName("CustomerID");
                 
                 // Hide Order Field
                 $fields->replaceField(
@@ -229,15 +263,6 @@ class Booking extends DataObject implements PermissionProvider
                 $start_field = $fields->dataFieldByName("Start");
 
                 if ($start_field) {
-                    $fields->addFieldToTab(
-                        'Root.Main',
-                        HeaderField::create(
-                            "DatesHeader",
-                            _t("SimpleBookings.SelectStartDate", "Select a Start Date")
-                        ),
-                        'Start'
-                    );
-
                     $start_field
                         ->getDateField()
                         ->setConfig("showcalendar", true);
@@ -289,18 +314,40 @@ class Booking extends DataObject implements PermissionProvider
 
                 // Add has one picker field.
                 $fields->addFieldsToTab(
-                    'Root.Customer',
+                    'Root.Contact',
                     array(
+                        TextField::create(
+                            "FirstName",
+                            $this->fieldLabel("FirstName")
+                        ),
+                        TextField::create(
+                            "Surname",
+                            $this->fieldLabel("Surname")
+                        ),
+                        TextField::create(
+                            "Email",
+                            $this->fieldLabel("Email")
+                        ),
+                        TextField::create(
+                            "PhoneNumber",
+                            $this->fieldLabel("PhoneNumber")
+                        ),
                         HeaderField::create(
                             "CustomerHeader",
-                            _t("SimpleBookings.CustomerDetails", "Customer Details")
+                            _t(
+                                "SimpleBookings.LinkToUser",
+                                "Link to an existing user account?"
+                            )
                         ),
                         HasOnePickerField::create(
                             $self,
                             'CustomerID',
                             _t("SimpleBookings.CustomerInfo", 'Customer Info'),
                             $self->Customer(),
-                            _t("SimpleBookings.SelectExistingCustomer", 'Select Existing Customer')
+                            _t(
+                                "SimpleBookings.SelectExistingCustomer",
+                                'Select Existing Customer'
+                            )
                         )->enableCreate(_t("SimpleBookings.AddNewCustomer", 'Add New Customer'))
                         ->enableEdit()
                     )
@@ -311,6 +358,11 @@ class Booking extends DataObject implements PermissionProvider
         return parent::getCMSFields();
     }
 
+    /**
+     * {@inheritdoc}
+     * 
+     * @return array
+     */
     public function providePermissions()
     {
         return array(
@@ -345,7 +397,8 @@ class Booking extends DataObject implements PermissionProvider
      * Return a member object, based on eith the passed param or
      * getting the currently logged in Member.
      * 
-     * @param  $member Either a Member object or an Int
+     * @param Member $member Either a Member object or an Int
+     *
      * @return Member | Null
      */
     protected function getMember($member = null)
@@ -461,6 +514,11 @@ class Booking extends DataObject implements PermissionProvider
                 $customisation->write();
                 $item->Customisations()->add($customisation);
             }
+        }
+
+        // Ensure we sync contact details to the order
+        foreach ($this->config()->fields_to_sync as $b_field => $o_field) {
+            $order->{$o_field} = $this->{$b_field};
         }
 
         $order->write();

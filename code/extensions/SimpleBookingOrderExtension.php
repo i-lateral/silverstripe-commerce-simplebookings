@@ -2,7 +2,7 @@
 
 class SimpleBookingOrderExtension extends DataExtension
 {
-    
+
     /**
      * Find a booking associated with this order (if it exists)
      *
@@ -15,16 +15,20 @@ class SimpleBookingOrderExtension extends DataExtension
 
     /**
      * Create a Booking when the order is marked as paid
+     * 
+     * @return void
      */
     public function onBeforeWrite()
-    {   
+    {
+        $booking = $this->owner->Booking();
+        $fields_to_sync = Config::inst()->get(Booking::class, "fields_to_sync");
+
         if ($this->owner->isChanged("Status") && $this->owner->Status == $this->owner->config()->completion_status && !$this->owner->BookingID) {
             $products = ArrayList::create();
             $start_title = _t("SimpleBookings.StartDate", "Start Date"); 
             $end_title = _t("SimpleBookings.EndDate", "End Date");
             $start_date = null;
             $end_date = null;
-            $booking = $this->owner->Booking();
 
             // First see if this order contains bookable products
             foreach ($this->owner->Items() as $item) {
@@ -74,6 +78,14 @@ class SimpleBookingOrderExtension extends DataExtension
 
                 $this->owner->BookingID = $booking->ID;
             }
+        }
+
+        // Ensure we sync contact details to the booking
+        if (isset($booking)) {
+            foreach ($fields_to_sync as $b_field => $o_field) {
+                $booking->{$b_field} = $this->owner->{$o_field};
+            }
+            $booking->write();
         }
     }
 }
