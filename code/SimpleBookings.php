@@ -29,6 +29,24 @@ class SimpleBookings extends ViewableData
     private static $allow_delivery = false;
 
     /**
+     * Provy for createDateRangeArray() for backwards compatibility
+     *
+     * @param string $date_from The starting date
+     * @param string $date_to   The end date
+     * @param int    $interval  Time period (seconds) to use to make the array
+     *
+     * @return array
+     */
+    public static function create_date_range_array($date_from, $date_to, $interval)
+    {
+        Deprecation::notice(
+            "0.5.0",
+            "Please use SimpleBookings::createDateRangeArray()"
+        );
+        return self::createDateRangeArray($date_from, $date_to, $interval);
+    }
+
+    /**
      * Takes two dates formatted as YYYY-MM-DD and creates an inclusive
      * array of the timecodes between the from and to dates.
      * 
@@ -41,7 +59,7 @@ class SimpleBookings extends ViewableData
      *
      * @return array
      */
-    public static function create_date_range_array($date_from, $date_to, $interval)
+    public static function createDateRangeArray($date_from, $date_to, $interval)
     {
         $range = array();
         $time_from = strtotime($date_from);
@@ -58,8 +76,8 @@ class SimpleBookings extends ViewableData
     }
 
     /**
-     * Find the total spaces already booked between the two provided dates.
-     *
+     * Proxy for getTotalSpaces until it is depreciated
+     * 
      * @param string $date_from The starting date
      * @param string $date_to   The end date
      * @param int    $ID        The ID of the product we are trying to book
@@ -68,6 +86,24 @@ class SimpleBookings extends ViewableData
      */
     public static function get_total_booked_spaces($date_from, $date_to, $ID)
     {
+        Deprecation::notice(
+            "0.5.0",
+            "Please use SimpleBookings::getTotalBookedSpaces()"
+        );
+        return self::getTotalBookedSpaces($date_from, $date_to, $ID);
+    }
+
+    /**
+     * Find the total spaces already booked between the two provided dates.
+     *
+     * @param string $date_from The starting date
+     * @param string $date_to   The end date
+     * @param int    $ID        The ID of the product we are trying to book
+     * 
+     * @return int
+     */
+    public static function getTotalBookedSpaces($date_from, $date_to, $ID)
+    {
         // First get a list of days between the start and end date
         $total_places = 0;
         $product = BookableProduct::get()->byID($ID);
@@ -75,31 +111,31 @@ class SimpleBookings extends ViewableData
         if ($product) {
             // Get all bookings with a start date within
             // the date range
-            $bookings_start = Booking::get()->filter(
+            $bookings_start = BookingResource::get()->filter(
                 array(
                 "Start:LessThanOrEqual" => $date_to,
                 "Start:GreaterThanOrEqual" => $date_from,
-                "Resources.ProductID" => $ID
+                "ProductID" => $ID
                 )
             );
 
             // Get all bookings with a start and end date within
             // the date range
-            $bookings_within = Booking::get()->filter(
+            $bookings_within = BookingResource::get()->filter(
                 array(
                 "Start:LessThanOrEqual" => $date_from,
                 "End:GreaterThanOrEqual" => $date_to,
-                "Resources.ProductID" => $ID
+                "ProductID" => $ID
                 )
             );
 
             // Get all bookings with an end date within
             // the date range
-            $bookings_end = Booking::get()->filter(
+            $bookings_end = BookingResource::get()->filter(
                 array(
                 "End:LessThanOrEqual" => $date_to,
                 "End:GreaterThanOrEqual" => $date_from,
-                "Resources.ProductID" => $ID
+                "ProductID" => $ID
                 )
             );
 
@@ -113,20 +149,17 @@ class SimpleBookings extends ViewableData
             
             // Now get all products inside these bookings that
             // match our date range and tally the results
-            foreach ($all_bookings as $booking) {
-                $resources = $booking->Resources()->Filter('ProductID', $ID);
-                foreach ($resources as $match_product) {
-                    $start_stamp = strtotime($date_from);
-                    $end_stamp = strtotime($date_to);
-                    $prod_start_stamp = strtotime($match_product->Start);
-                    $prod_end_stamp = strtotime($match_product->End);
+            foreach ($all_bookings as $match_product) {
+                $start_stamp = strtotime($date_from);
+                $end_stamp = strtotime($date_to);
+                $prod_start_stamp = strtotime($match_product->Start);
+                $prod_end_stamp = strtotime($match_product->End);
 
-                    if ($prod_start_stamp >= $start_stamp && $prod_start_stamp <= $end_stamp 
-                        || $prod_start_stamp <= $start_stamp && $prod_end_stamp >= $end_stamp 
-                        || $prod_end_stamp >= $start_stamp && $prod_end_stamp <= $end_stamp
-                    ) {
-                        $total_places += $match_product->BookedQTY;
-                    }
+                if ($prod_start_stamp >= $start_stamp && $prod_start_stamp <= $end_stamp 
+                    || $prod_start_stamp <= $start_stamp && $prod_end_stamp >= $end_stamp 
+                    || $prod_end_stamp >= $start_stamp && $prod_end_stamp <= $end_stamp
+                ) {
+                    $total_places += $match_product->BookedQTY;
                 }
             }
 
