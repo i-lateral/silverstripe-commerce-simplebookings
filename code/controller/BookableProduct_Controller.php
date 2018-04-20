@@ -94,7 +94,7 @@ class BookableProduct_Controller extends Product_Controller
             }
 
             $total_time = count(
-                SimpleBookings::create_date_range_array(
+                SimpleBookings::createDateRangeArray(
                     $data["Calendar"]["StartDate"],
                     $data["Calendar"]["EndDate"],
                     $object->PricingPeriod

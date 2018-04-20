@@ -38,7 +38,7 @@ class SimpleBookingShoppingCartExtension extends Extension
                 }
             }
 
-            $total_places = SimpleBookings::get_total_booked_spaces($start_date, $end_date, $object->ID);
+            $total_places = SimpleBookings::getTotalBookedSpaces($start_date, $end_date, $object->ID);
 
             // If we have asked for more places than are available set the quantity to the
             // nuymber of places left

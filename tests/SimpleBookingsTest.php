@@ -35,7 +35,7 @@ class SimpleBookingsTest extends SapphireTest
 
         // Check that we find the correct number of 
         // already booked spaces in thei time period
-        $total_places = SimpleBookings::get_total_booked_spaces(
+        $total_places = SimpleBookings::getTotalBookedSpaces(
             $start,
             $end,
             $room->ID
@@ -63,7 +63,7 @@ class SimpleBookingsTest extends SapphireTest
 
         // Check that we find the correct number of 
         // already booked spaces in thei time period
-        $total_places = SimpleBookings::get_total_booked_spaces(
+        $total_places = SimpleBookings::getTotalBookedSpaces(
             $start,
             $end,
             $room->ID
@@ -91,7 +91,7 @@ class SimpleBookingsTest extends SapphireTest
 
         // Check that we find the correct number of 
         // already booked spaces in thei time period
-        $total_places = SimpleBookings::get_total_booked_spaces(
+        $total_places = SimpleBookings::getTotalBookedSpaces(
             $start,
             $end,
             $room->ID
@@ -119,7 +119,7 @@ class SimpleBookingsTest extends SapphireTest
 
         // Check that we find the correct number of 
         // already booked spaces in thei time period
-        $total_places = SimpleBookings::get_total_booked_spaces(
+        $total_places = SimpleBookings::getTotalBookedSpaces(
             $start,
             $end,
             $room->ID

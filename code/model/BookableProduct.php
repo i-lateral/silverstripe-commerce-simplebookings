@@ -121,7 +121,7 @@ class BookableProduct extends Product
      */
     public function getBookedPlaces($start, $end)
     {
-        return SimpleBookings::get_total_booked_spaces(
+        return SimpleBookings::getTotalBookedSpaces(
             $start,
             $end,
             $this->ID

@@ -97,7 +97,7 @@ class BookingDetailForm_ItemRequest extends GridFieldDetailForm_ItemRequest
             // Loop through each booking item and add that to the order
             foreach($record->getProducts() as $product) {
                 $total_time = count(
-                    SimpleBookings::create_date_range_array(
+                    SimpleBookings::createDateRangeArray(
                         $record->Start,
                         $record->End,
                         $record->PricingPeriod

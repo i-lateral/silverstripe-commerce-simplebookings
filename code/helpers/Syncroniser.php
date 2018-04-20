@@ -153,7 +153,7 @@ class Syncroniser extends Object
 
                 if (isset($product)) {
                     $total_time = count(
-                        SimpleBookings::create_date_range_array(
+                        SimpleBookings::createDateRangeArray(
                             $resource->Start,
                             $resource->End,
                             $product->PricingPeriod
