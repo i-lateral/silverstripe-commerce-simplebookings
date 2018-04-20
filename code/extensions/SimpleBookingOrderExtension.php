@@ -1,5 +1,7 @@
 <?php
 
+use ilateral\SimpleBookings\Helpers\Syncroniser;
+
 class SimpleBookingOrderExtension extends DataExtension
 {
 
@@ -14,78 +16,39 @@ class SimpleBookingOrderExtension extends DataExtension
     }
 
     /**
+     * Syncronise this order with a booking object
+     * 
+     * @return void
+     */
+    public function syncWithBooking()
+    {
+        // Either use existing booking (or generate a new one.
+        $booking = $this->owner->Booking();
+
+        if (!$booking) {
+            $booking = Booking::create();
+        }
+
+        $sync = Syncroniser::create($booking, $this->owner);
+
+        if ($this->owner->isChanged("Status") && $this->owner->isPaid()) {
+            $sync->setSyncProducts(true);
+        }
+
+        // Pass data to syncroniser. If this booking is new
+        // and there is nothing to sync, it will not be written
+        $sync->orderToBooking();
+
+        $this->owner->extend("afterSyncWithBooking", $booking, $sync);
+    }
+
+    /**
      * Create a Booking when the order is marked as paid
      * 
      * @return void
      */
-    public function onBeforeWrite()
+    public function onAfterWrite()
     {
-        $booking = $this->owner->Booking();
-        $fields_to_sync = Config::inst()->get(Booking::class, "fields_to_sync");
-
-        if ($this->owner->isChanged("Status") && $this->owner->Status == $this->owner->config()->completion_status && !$this->owner->BookingID) {
-            $products = ArrayList::create();
-            $start_title = _t("SimpleBookings.StartDate", "Start Date"); 
-            $end_title = _t("SimpleBookings.EndDate", "End Date");
-            $start_date = null;
-            $end_date = null;
-
-            // First see if this order contains bookable products
-            foreach ($this->owner->Items() as $item) {
-                $product = $item->FindStockItem();
-
-                if ($product && $product instanceof BookableProduct) {
-                    foreach ($item->Customisations() as $customisation) {
-                        if ($customisation->Title == $start_title) {
-                            $start_date = $customisation->Value;
-                        }
-
-                        if ($customisation->Title == $end_title) {
-                            $end_date = $customisation->Value;
-                        }
-                    }
-
-                    $products->add(
-                        ArrayData::create(
-                            array(
-                            "Product" => $product,
-                            "Quantity" => $item->Quantity
-                            )
-                        )
-                    );
-                }
-            }
-
-            // If we have found bookable products
-            if (!$booking && $products->exists()) {
-                $booking = Booking::create();
-                $booking->Start = $start_date;
-                $booking->End = $end_date;
-                $booking->OrderID = $this->owner->ID;
-                $booking->write();
-
-                foreach ($products as $product) {
-                    $resource = BookingResource::create();
-                    $resource->Title = $product->Product->Title;
-                    $resource->Start = $start_date;
-                    $resource->End = $end_date;
-                    $resource->ProductID = $product->Product->ID;
-                    $resource->BookedQTY = $product->Quantity;
-                    $resource->write();
-
-                    $booking->Resources()->add($resource);
-                }
-
-                $this->owner->BookingID = $booking->ID;
-            }
-        }
-
-        // Ensure we sync contact details to the booking
-        if (isset($booking)) {
-            foreach ($fields_to_sync as $b_field => $o_field) {
-                $booking->{$b_field} = $this->owner->{$o_field};
-            }
-            $booking->write();
-        }
+        $this->syncWithBooking();
     }
 }

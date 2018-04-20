@@ -24,4 +24,9 @@ This file lists changes made to this module
 
 ## 0.5.0
 
-* Simplify how bookings work in admin slightly 
+* Simplify how bookings work in admin slightly
+
+## 0.5.1
+
+* Add `Syncroniser` class to handle syncing bookings and orders
+* Add extension hooks to syncronisation points
