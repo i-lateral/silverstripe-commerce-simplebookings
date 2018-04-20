@@ -203,33 +203,31 @@ class SimpleBookings extends ViewableData
             foreach ($all_allocations as $allocation) {
                 if ($allocation->AllocateAll) {
                     $all_allocated = true;
-                    break;
                 }
+
                 $resources = $allocation->Resources()->Filter('ID', $ID);
+                
                 foreach ($resources as $product) {
-                    if ($product->AllocateAll) {
-                        $all_allocated = true;
-                        break;
-                    }
-                    $start_stamp = strtotime($date_from);
-                    $end_stamp = strtotime($date_to);
-                    $alloc_start_stamp = strtotime($allocation->Start);
-                    $alloc_end_stamp = strtotime($allocation->End);
-                    if ($alloc_start_stamp >= $start_stamp && $alloc_start_stamp <= $end_stamp 
-                        || $alloc_start_stamp <= $start_stamp && $alloc_end_stamp >= $end_stamp 
-                        || $alloc_end_stamp >= $start_stamp && $alloc_end_stamp <= $end_stamp
-                    ) {
-                        if ($product->Increase) {
-                            $total_places -= $product->Quantity;
-                        } else {   
-                            $total_places += $product->Quantity;
+                    if ($all_allocated || $product->AllocateAll) {
+                        $total_places += $product->AvailablePlaces;
+                    } else {
+                        $start_stamp = strtotime($date_from);
+                        $end_stamp = strtotime($date_to);
+                        $alloc_start_stamp = strtotime($allocation->Start);
+                        $alloc_end_stamp = strtotime($allocation->End);
+
+                        if ($alloc_start_stamp >= $start_stamp && $alloc_start_stamp <= $end_stamp 
+                            || $alloc_start_stamp <= $start_stamp && $alloc_end_stamp >= $end_stamp 
+                            || $alloc_end_stamp >= $start_stamp && $alloc_end_stamp <= $end_stamp
+                        ) {
+                            if ($product->Increase) {
+                                $total_places -= $product->Quantity;
+                            } else {
+                                $total_places += $product->Quantity;
+                            }
                         }
                     }
                 }
-            }
-
-            if ($all_allocated) {
-                $total_places = $product->AvailablePlaces;
             }
         }
 
