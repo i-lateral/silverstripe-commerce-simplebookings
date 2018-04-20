@@ -30,3 +30,9 @@ This file lists changes made to this module
 
 * Add `Syncroniser` class to handle syncing bookings and orders
 * Add extension hooks to syncronisation points
+
+## 0.5.2
+
+* Use new PSR2 function names.
+* Fix bugs in resource allocation checks.
+* Clean up resource allocation code.
