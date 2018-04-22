@@ -13,6 +13,7 @@ use SimpleBookings;
 use BookableProduct;
 use BookingResource;
 use OrderItemCustomisation;
+use Session;
 
 /**
  * Basic class that assists in syncronising bookings and orders.
@@ -25,6 +26,9 @@ use OrderItemCustomisation;
  */
 class Syncroniser extends Object
 {
+
+    const SYNC_NAME = "SimpleBookings.SyncPerformed";
+
     /**
      * Sync related products/resources? If this is set to false
      * then only contact details will be synced.
@@ -47,6 +51,8 @@ class Syncroniser extends Object
 
     /**
      * Set the value of sync_products
+     *
+     * @param boolean $sync_products Do we want to sync products
      *
      * @return self
      */ 
@@ -76,6 +82,8 @@ class Syncroniser extends Object
 
     /**
      * Set the value of order
+     * 
+     * @param Order $order The order to sync with
      *
      * @return self
      */ 
@@ -105,6 +113,8 @@ class Syncroniser extends Object
 
     /**
      * Set the value of booking
+     * 
+     * @param Booking $booking The booking to sync with
      *
      * @return self
      */ 
@@ -136,6 +146,13 @@ class Syncroniser extends Object
      */
     public function bookingToOrder()
     {
+        // If sync already performed, then do not sync again
+        if (Session::get(self::SYNC_NAME) === true) {
+            Session::set(self::SYNC_NAME, false);
+            return;
+        }
+
+        Session::set(self::SYNC_NAME, true);
         $booking = $this->getBooking();
         $order = $this->getOrder();
         $sync_products = $this->getSyncProducts();
@@ -227,7 +244,10 @@ class Syncroniser extends Object
 
                     $customisation = OrderItemCustomisation::create(
                         array(
-                        "Title" => _t("SimpleBookings.LengthOfTime", "Length of Time"),
+                        "Title" => _t(
+                            "SimpleBookings.LengthOfTime",
+                            "Length of Time"
+                        ),
                         "Value" => $total_time,
                         "Price" => ($product->Price * $total_time) - $product->Price
                         )
@@ -268,7 +288,14 @@ class Syncroniser extends Object
      * @return self
      */
     public function orderToBooking()
-    {
+    {        
+        // If sync already performed, then do not sync again
+        if (Session::get(self::SYNC_NAME) === true) {
+            Session::set(self::SYNC_NAME, false);
+            return;
+        }
+
+        Session::set(self::SYNC_NAME, true);
         $booking = $this->getBooking();
         $order = $this->getOrder();
         $sync_products = $this->getSyncProducts();
