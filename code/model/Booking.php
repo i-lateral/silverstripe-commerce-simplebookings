@@ -229,7 +229,7 @@ class Booking extends DataObject implements PermissionProvider
      */
     public function updateEndDate()
     {
-        $end = new DateTime($this->End);
+        $end = new DateTime($this->Start);
 
         foreach ($this->Resources() as $resource) {
             $new_end = new DateTime($resource->End);
@@ -254,7 +254,7 @@ class Booking extends DataObject implements PermissionProvider
             function ($fields) use ($self) {
                 $fields->removeByName("End");
                 $fields->removeByName("CustomerID");
-                
+
                 // Hide Order Field
                 $fields->replaceField(
                     "OrderID",
