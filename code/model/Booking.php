@@ -30,13 +30,14 @@ class Booking extends DataObject implements PermissionProvider
     );
 
     private static $db = array(
-        "Start"     => "SS_Datetime",
-        "End"       => "SS_Datetime",
-        "FirstName" => "Varchar(255)",
-        "Surname"   => "Varchar(255)",
-        "Email"     => "Varchar(255)",
-        "PhoneNumber"=> "Varchar(255)",
-        "PartySize" => "Int"
+        "Start"         => "SS_Datetime",
+        "End"           => "SS_Datetime",
+        "FirstName"     => "Varchar(255)",
+        "Surname"       => "Varchar(255)",
+        "Email"         => "Varchar(255)",
+        "PhoneNumber"   => "Varchar(255)",
+        "PartySize"     => "Int",
+        "DisableSync"   => "Boolean"
     );
 
     private static $has_one = array(
@@ -52,6 +53,11 @@ class Booking extends DataObject implements PermissionProvider
         "Overbooked"    => "Boolean",
         "ProductsHTML"  => "HTMLText",
         "TotalCost"     => "Currency"
+    );
+
+    private static $field_labels = array(
+        "Start"         => "Start Date/Time",
+        "DisableSync"   => "Disable automatic order sync"
     );
 
     private static $summary_fields = array(
@@ -354,6 +360,27 @@ class Booking extends DataObject implements PermissionProvider
                         ->enableEdit()
                     )
                 );
+
+                // Setup a field to handle order association
+                $fields->addFieldToTab(
+                    "Root.Order",
+                    $order_field = HasOnePickerField::create(
+                        $self,
+                        'OrderID',
+                        _t("SimpleBookings.LinkToOrder", 'Link to an Order'),
+                        $self->Order(),
+                        _t(
+                            "SimpleBookings.SelectExistingOrder",
+                            'Select Existing Order'
+                        )
+                    )->enableEdit()
+                    ->enableCreate(_t("SimpleBookings.AddNewOrder", 'Add New Order'))
+                );
+
+                $order_field
+                    ->getConfig()
+                    ->removeComponentsByType(GridFieldDetailForm::class)
+                    ->addComponent(new OrdersGridFieldDetailForm());
             }
         );
         
@@ -572,7 +599,9 @@ class Booking extends DataObject implements PermissionProvider
     {
         parent::onAfterWrite();
 
-        $this->sync();
+        if (!$this->DisableSync) {
+            $this->sync();
+        }
     }
 
     /**

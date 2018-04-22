@@ -25,6 +25,11 @@ class SimpleBookingOrderExtension extends DataExtension
         // Either use existing booking (or generate a new one.
         $booking = $this->owner->Booking();
 
+        // If booking is set to disable sync, do it automatically
+        if (isset($booking) && $booking->DisableSync) {
+            return;
+        }
+
         if (!$booking) {
             $booking = Booking::create();
         }
