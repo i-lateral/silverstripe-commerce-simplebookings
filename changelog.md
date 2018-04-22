@@ -36,3 +36,10 @@ This file lists changes made to this module
 * Use new PSR2 function names.
 * Fix bugs in resource allocation checks.
 * Clean up resource allocation code.
+
+## 0.5.3
+
+ * Ensure booking end date is generated more accuratly
+ * Fix recursive error when syncing bookings and orders
+ * Add ability to disable the automatic order sync
+ * Add fiedl to display attached order
