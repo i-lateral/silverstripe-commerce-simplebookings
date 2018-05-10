@@ -177,8 +177,10 @@ class BookingResource extends DataObject
         $booking = $this->Booking();
         
         if ($booking->exists()) {
-            $booking->updateEndDate();
-            $booking->write();
+            $flag = $booking->updateEndDate();
+            if ($flag) {
+                $booking->write();
+            }
         }
     }
 }

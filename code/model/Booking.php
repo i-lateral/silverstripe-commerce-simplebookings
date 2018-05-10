@@ -236,16 +236,19 @@ class Booking extends DataObject implements PermissionProvider
     public function updateEndDate()
     {
         $end = new DateTime($this->Start);
+        $flag = false;
 
         foreach ($this->Resources() as $resource) {
             $new_end = new DateTime($resource->End);
 
             if ($new_end > $end) {
                 $end = $new_end;
+                $flag = true;
             }
         }
 
         $this->End = $end->format("Y-m-d H:i:s");
+        return $flag;
     }
 
     /**
