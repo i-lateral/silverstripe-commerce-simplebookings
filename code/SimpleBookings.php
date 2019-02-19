@@ -1,5 +1,6 @@
 <?php
 
+
 /**
  * Config class for this module to hold global settings.
  *
@@ -104,52 +105,41 @@ class SimpleBookings extends ViewableData
      */
     public static function getTotalBookedSpaces($date_from, $date_to, $ID)
     {
+        $db = DB::get_conn();
+
         // First get a list of days between the start and end date
         $total_places = 0;
         $product = BookableProduct::get()->byID($ID);
+        
+        $format = "%Y-%m-%d";
+
+        $start_field = $db->formattedDatetimeClause(
+            'Start',
+            $format
+        );
+        $end_field = $db->formattedDatetimeClause(
+            'End',
+            $format
+        );
+
+        $date_filter = [
+            $start_field . ' <= ?' =>  $date_to,
+            $start_field . ' >= ?' =>  $date_from,
+            $end_field . ' >= ?' =>  $date_from,
+            $end_field . ' <= ?' =>  $date_to,
+            "ProductID" => $ID
+        ];
 
         if ($product) {
             // Get all bookings with a start date within
             // the date range
-            $bookings_start = BookingResource::get()->filter(
-                array(
-                "Start:LessThanOrEqual" => $date_to,
-                "Start:GreaterThanOrEqual" => $date_from,
-                "ProductID" => $ID
-                )
+            $bookings = BookingResource::get()->where(
+                $date_filter
             );
-
-            // Get all bookings with a start and end date within
-            // the date range
-            $bookings_within = BookingResource::get()->filter(
-                array(
-                "Start:LessThanOrEqual" => $date_from,
-                "End:GreaterThanOrEqual" => $date_to,
-                "ProductID" => $ID
-                )
-            );
-
-            // Get all bookings with an end date within
-            // the date range
-            $bookings_end = BookingResource::get()->filter(
-                array(
-                "End:LessThanOrEqual" => $date_to,
-                "End:GreaterThanOrEqual" => $date_from,
-                "ProductID" => $ID
-                )
-            );
-
-            // Create a new list of all bookings and clean it
-            // of duplicates
-            $all_bookings = ArrayList::create();
-            $all_bookings->merge($bookings_start);
-            $all_bookings->merge($bookings_end);
-            $all_bookings->merge($bookings_within);
-            $all_bookings->removeDuplicates();
             
             // Now get all products inside these bookings that
             // match our date range and tally the results
-            foreach ($all_bookings as $match_product) {
+            foreach ($bookings as $match_product) {
                 $start_stamp = strtotime($date_from);
                 $end_stamp = strtotime($date_to);
                 $prod_start_stamp = strtotime($match_product->Start);
@@ -163,44 +153,20 @@ class SimpleBookings extends ViewableData
                 }
             }
 
+            $date_filter = [
+                $start_field . ' <= ?' =>  $date_to,
+                $start_field . ' >= ?' =>  $date_from,
+                $end_field . ' >= ?' =>  $date_from,
+                $end_field . ' <= ?' =>  $date_to
+            ];
+
             // Get all bookings with a start date within
             // the date range
-            $allocations_start = ResourceAllocation::get()->filter(
-                array(
-                "Start:LessThanOrEqual" => $date_to,
-                "Start:GreaterThanOrEqual" => $date_from
-                )
-            );
-
-            // Get all bookings with a start and end date within
-            // the date range
-            $allocations_within = ResourceAllocation::get()->filter(
-                array(
-                "Start:LessThanOrEqual" => $date_from,
-                "End:GreaterThanOrEqual" => $date_to
-                )
-            );
-
-            // Get all bookings with an end date within
-            // the date range
-            $allocations_end = ResourceAllocation::get()->filter(
-                array(
-                "End:LessThanOrEqual" => $date_to,
-                "End:GreaterThanOrEqual" => $date_from
-                )
-            );
-
-            // Create a new list of all bookings and clean it
-            // of duplicates
-            $all_allocations = ArrayList::create();
-            $all_allocations->merge($allocations_start);
-            $all_allocations->merge($allocations_end);
-            $all_allocations->merge($allocations_within);
-            $all_allocations->removeDuplicates();
+            $allocations = ResourceAllocation::get()->where($date_filter);
 
             $all_allocated = false;
 
-            foreach ($all_allocations as $allocation) {
+            foreach ($allocations as $allocation) {
                 if ($allocation->AllocateAll) {
                     $all_allocated = true;
                 }
