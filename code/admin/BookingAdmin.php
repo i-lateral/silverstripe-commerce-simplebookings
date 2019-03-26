@@ -45,14 +45,12 @@ class BookingAdmin extends ModelAdmin
         $fields->replaceField(
             "q[Start]",
             $start_field = DateField::create("q[StartDate]", _t("SimpleBookings.StartDate", "Start Date"))
-                ->setConfig('dateformat', 'yyyy-MM-dd')
                 ->setConfig('showcalendar', true)
         );
 
         $fields->replaceField(
             "q[End]",
             $end_field = DateField::create("q[EndDate]", _t("SimpleBookings.EndDate", "End Date"))
-                ->setConfig('dateformat', 'yyyy-MM-dd')
                 ->setConfig('showcalendar', true)
         );
 
