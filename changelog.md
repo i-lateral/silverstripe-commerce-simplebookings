@@ -43,3 +43,7 @@ This file lists changes made to this module
  * Fix recursive error when syncing bookings and orders
  * Add ability to disable the automatic order sync
  * Add fiedl to display attached order
+
+## 0.5.11
+
+* made booking filter less restrictive
