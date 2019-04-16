@@ -108,37 +108,30 @@ class BookingAdmin extends ModelAdmin
         // Perform complex filtering
         if ($this->modelClass == 'Booking') {
             $query = $this->getRequest()->getVar("q");
-
             // If a start date and end date are set, filter all dates
             if (is_array($query)) {
+                $start_object = new Date();
+                $end_object = new Date();
                 $start_date = null;
                 $end_date = null;
 
                 if (array_key_exists("StartDate", $query) && $query["StartDate"]) {
-                    $start_date = new DateTime($query["StartDate"] . " " . $this->config()->default_start_time);
+                    $start_object->setValue($query["StartDate"]);
+                    $start_date = new DateTime($start_object->getValue() . " " . $this->config()->default_start_time);
                 }
 
                 if (array_key_exists("EndDate", $query) && $query["EndDate"]) {
-                    $end_date = new DateTime($query["EndDate"] . " " . $this->config()->default_end_time);
+                    $end_object->setValue($query["EndDate"]);
+                    $end_date = new DateTime($end_object->getValue() . " " . $this->config()->default_end_time);
                 } elseif ($start_date) {
-                    $end_date = new DateTime($query["StartDate"] . " " . $this->config()->default_end_time);
+                    $end_date = new DateTime($start_object->getValue() . " " . $this->config()->default_end_time);
                 }
 
                 // If both dates are the same, we can assume that it is a one day booking
-                if ($start_date && $end_date) {
-                    if ($start_date->format("Y-m-d") == $end_date->format("Y-m-d")) {
-                        
-                        $list = $list
-                            ->exclude("End:LessThan", $start_date->format("Y-m-d H:i:s"))
-                            ->exclude("Start:GreaterThan", $end_date->format("Y-m-d H:i:s"));
-                    } else {
-                        $list = $list->filter(
-                            array(
-                            "Start:GreaterThanOrEqual" => $start_date->format("Y-m-d H:i:s"),
-                            "End:LessThanOrEqual" => $end_date->format("Y-m-d H:i:s")
-                            )
-                        );
-                    }
+                if ($start_date && $end_date) {                        
+                    $list = $list
+                        ->exclude("End:LessThan", $start_date->format("Y-m-d H:i:s"))
+                        ->exclude("Start:GreaterThan", $end_date->format("Y-m-d H:i:s"));
                 }
             }
         }
