@@ -19,7 +19,7 @@
         "i-lateral/silverstripe-commerce": "3.0.*@dev",
         "i-lateral/silverstripe-gridfield-addons": "^1",
         "briceburg/silverstripe-pickerfield":"*",
-        "i-lateral/silverstripe-calendarfield": "^0.4"
+        "i-lateral/silverstripe-calendarfield": ">=0.4"
     },
     "suggest": {
         "silverstripe/cms": "Add full content management support to your site",
