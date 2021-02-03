@@ -5,7 +5,7 @@ class BookingCalendarField extends CalendarField
     protected $product;
 
     /**
-     * define the date format
+     * define the time format
      *
      * @config
      * 
@@ -23,7 +23,7 @@ class BookingCalendarField extends CalendarField
     private static $date_format = "Y-m-d";
 
     /**
-     * define the date format
+     * define the full datetime format
      *
      * @config
      * 
