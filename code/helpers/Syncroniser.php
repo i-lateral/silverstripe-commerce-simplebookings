@@ -4,7 +4,7 @@ namespace ilateral\SimpleBookings\Helpers;
 
 use Order;
 use Config;
-use Object;
+use SS_Object;
 use Booking;
 use ArrayData;
 use ArrayList;
@@ -24,7 +24,7 @@ use Session;
  * @license  https://spdx.org/licenses/BSD-3-Clause.html BSD-3-Clause
  * @link     https://github.com/i-lateral/silverstripe-commerce-simplebookings
  */
-class Syncroniser extends Object
+class Syncroniser extends SS_Object
 {
 
     const SYNC_NAME = "SimpleBookings.SyncPerformed";
