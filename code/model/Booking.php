@@ -14,6 +14,13 @@ use ilateral\SimpleBookings\Helpers\Syncroniser;
  */
 class Booking extends DataObject implements PermissionProvider
 {
+    /**
+     * Allow globally disabling of automatic sync of Bookings
+     * and orders
+     *
+     * @var bool
+     */
+    private static $global_sync_disable = false;
 
     /**
      * DB/Casted fields that will be synced to/from an order on write.
@@ -601,6 +608,10 @@ class Booking extends DataObject implements PermissionProvider
     public function onAfterWrite()
     {
         parent::onAfterWrite();
+
+        if ($this->config()->get('global_sync_disable') == true) {
+            return;
+        }
 
         if (!$this->DisableSync) {
             $this->sync();

@@ -54,6 +54,10 @@ class SimpleBookingOrderExtension extends DataExtension
      */
     public function onAfterWrite()
     {
+        if (Config::inst()->get(Booking::class, 'global_sync_disable') == true) {
+            return;
+        }
+
         $this->syncWithBooking();
     }
 }
